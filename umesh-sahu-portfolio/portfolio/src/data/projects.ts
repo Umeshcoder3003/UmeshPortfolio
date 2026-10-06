@@ -180,38 +180,38 @@ export const projects: Project[] = [
       "Debugged a NameError ('PipelineRunTimeStamp' is not defined): the notebook needs a parameter cell declaring PipelineRunTimeStamp so the pipeline can override it at run time.",
     ],
     screenshots: [
-      {
+            {
         src: "/projects/Incremental-Shipping/0.png",
         alt: "Lakehouse explorer showing the CS_2 folder containing six JSON log files",
         caption: "Source data: shipment event logs landing in Files/CS_2 as individual JSON files",
       },
       {
-        src: "/projects/Incremental-Shipping/1.png",
+        src: "/projects/Incremental-Shipping/6.png",
         alt: "Spark SQL notebook creating and querying the GFF watermarktable",
         caption: "State table: GFF.watermarktable (TableName, Watermarkvalue) created in a Spark SQL notebook and queried to confirm its single row",
       },
       {
-        src: "/projects/Incremental-Shipping/2.png",
+        src: "/projects/Incremental-Shipping/1.png",
         alt: "Lookup activity Get_mod_time reading GFF.watermarktable with First row only enabled",
         caption: "Lookup activity: Get_mod_time reads the last watermark from GFF.watermarktable (first row only)",
       },
       {
-        src: "/projects/Incremental-Shipping/3.png",
+        src: "/projects/Incremental-Shipping/2.png",
         alt: "Copy data source settings reading JSON from CS_2 with a filter by last modified window",
         caption: "Copy activity source: reads JSON from CS_2 recursively, filtered by last modified from the Lookup watermark to @pipeline().TriggerTime",
       },
       {
-        src: "/projects/Incremental-Shipping/4.png",
+        src: "/projects/Incremental-Shipping/3.png",
         alt: "Copy data destination settings loading GFF.ShippingLogs with the Append table action",
         caption: "Copy activity destination: loads GFF.ShippingLogs using Append, since each shipment event is a new immutable record",
       },
       {
-        src: "/projects/Incremental-Shipping/5.png",
+        src: "/projects/Incremental-Shipping/4.png",
         alt: "Notebook activity settings passing PipelineRunTimeStamp as @pipeline().TriggerTime",
         caption: "Notebook activity: UpdateWatermark receives PipelineRunTimeStamp = @pipeline().TriggerTime and runs only after the Copy succeeds",
       },
       {
-        src: "/projects/Incremental-Shipping/6.png",
+        src: "/projects/Incremental-Shipping/5.png",
         alt: "Update watermark notebook showing a NameError for PipelineRunTimeStamp",
         caption: "Debugging: the UPDATE statement failed with a NameError until the timestamp was declared in a parameter cell",
       },
