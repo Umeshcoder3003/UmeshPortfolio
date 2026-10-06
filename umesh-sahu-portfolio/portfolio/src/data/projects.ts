@@ -124,6 +124,104 @@ export const projects: Project[] = [
     ],
     // github: "https://github.com/your-username/your-repo",
   },
+  
+  
+  {
+    slug: "global-freight-forwarders-logistics-data-modernization",
+    title: "Global Freight Forwarders: Logistics Data Modernization",
+    status: "in-progress",
+    featured: true,
+    summary:
+      "An automated, incremental data ingestion pipeline within the Microsoft Fabric ecosystem. The solution introduces a watermark-based state tracking mechanism that autonomously detects net-new JSON files, filters them by last-modified time, and appends them into a governed Delta table in the Bronze layer. Manual intervention is eliminated, only new records are processed on each run, and downstream reporting now stands on an auditable foundation that scales with volume rather than against it.",
+    // TODO: replace with the real business context for this dataset
+    businessProblem:
+      "The manual approach scales linearly with volume. Volume is not staying still. The next missed file is one busy morning away.",
+    objective:
+      "Global Freight Forwarders is a market leader in international logistics, managing high-velocity supply chains across multiple continents. The Operations Department serves as the nerve centre, relying on a continuous stream of shipment logs to monitor carrier performance and delivery timelines. Logs arrive daily as raw JSON files in a central Lakehouse, each capturing a shipment's origin, destination, carrier, status, and timestamp. Together they represent the ground truth of GFF's global cargo movements.",
+    dataset: {
+      source: "High-velocity JSON files, one per shipment event (log_<guid>.json, ~240-270 B each), landed in the CS_2 folder of the Lakehouse.",
+      structure: "JSON files loaded into the ShippingLogs table in the GFF schema, with a companion watermarktable (TableName STRING, Watermarkvalue TIMESTAMP) tracking the last successful load.",
+    },
+    technologies: [
+      "Microsoft Fabric",
+      "Fabric Data Pipeline",
+      "Lakehouse",
+      "Delta Lake",
+      "PySpark",
+      "Spark SQL",
+      "JSON",
+    ],
+    architecture: [
+      { label: "JSON Files (CS_2)", icon: "file" },
+      { label: "Lookup Watermark", icon: "ingestion", detail: "Get_mod_time" },
+      { label: "Copy to Lakehouse", icon: "ingestion", detail: "Last-modified filter" },
+      { label: "ShippingLogs Table", icon: "storage", layer: "bronze", detail: "APPEND" },
+      { label: "Update Watermark", icon: "transform", detail: "Notebook" },
+    ],
+    concepts: [
+      "Watermark-based incremental loading stored in a Delta table",
+      "Filter by last modified: window between the previous watermark and the pipeline trigger time",
+      "Append over Upsert for immutable, event-level records",
+      "Parameterised notebook activity (pipeline-to-notebook hand-off)",
+      "Capturing @pipeline().TriggerTime so files landing mid-run are not missed",
+    ],
+    dataQualityTechniques: [
+      "Append-only incremental ingestion via watermark. Shipment events are immutable and unique per file, so Append is correct and Upsert would add key-matching cost for no benefit. The shift is from manual judgement to state-aware orchestration.",
+      "Success-only activity chaining: the watermark advances only if the Copy activity succeeds, so a failed load is retried on the next run",
+      "Accurately pick files stored after the previous run using Start = last watermark and End = pipeline trigger time",
+    ],
+    implementation: [
+      "Organised the Lakehouse Files area into CS_ folders, with CS_2 holding the incoming shipment log JSON files.",
+      "Created the GFF.watermarktable Delta table (TableName STRING, Watermarkvalue TIMESTAMP) in a Spark SQL notebook and seeded it with the initial watermark row.",
+      "Added a Lookup activity (Get_mod_time) that reads GFF.watermarktable with First row only enabled.",
+      "Built a Copy activity that reads JSON from CS_2 recursively, filtered by last modified between the Lookup's watermark and @pipeline().TriggerTime, and loads GFF.ShippingLogs with the Append table action.",
+      "Added a Notebook activity (UpdateWatermark) chained on success of the Copy activity, passing PipelineRunTimeStamp = @pipeline().TriggerTime as a base parameter.",
+      "In the update notebook, ran an UPDATE on watermarktable setting Watermarkvalue to the passed timestamp WHERE Tablename = 'ShippingLogs'.",
+      "Debugged a NameError ('PipelineRunTimeStamp' is not defined): the notebook needs a parameter cell declaring PipelineRunTimeStamp so the pipeline can override it at run time.",
+    ],
+    screenshots: [
+      {
+        src: "/projects/Incremental-Shipping/0.png",
+        alt: "Lakehouse explorer showing the CS_2 folder containing six JSON log files",
+        caption: "Source data: shipment event logs landing in Files/CS_2 as individual JSON files",
+      },
+      {
+        src: "/projects/Incremental-Shipping/1.png",
+        alt: "Spark SQL notebook creating and querying the GFF watermarktable",
+        caption: "State table: GFF.watermarktable (TableName, Watermarkvalue) created in a Spark SQL notebook and queried to confirm its single row",
+      },
+      {
+        src: "/projects/Incremental-Shipping/2.png",
+        alt: "Lookup activity Get_mod_time reading GFF.watermarktable with First row only enabled",
+        caption: "Lookup activity: Get_mod_time reads the last watermark from GFF.watermarktable (first row only)",
+      },
+      {
+        src: "/projects/Incremental-Shipping/3.png",
+        alt: "Copy data source settings reading JSON from CS_2 with a filter by last modified window",
+        caption: "Copy activity source: reads JSON from CS_2 recursively, filtered by last modified from the Lookup watermark to @pipeline().TriggerTime",
+      },
+      {
+        src: "/projects/Incremental-Shipping/4.png",
+        alt: "Copy data destination settings loading GFF.ShippingLogs with the Append table action",
+        caption: "Copy activity destination: loads GFF.ShippingLogs using Append, since each shipment event is a new immutable record",
+      },
+      {
+        src: "/projects/Incremental-Shipping/5.png",
+        alt: "Notebook activity settings passing PipelineRunTimeStamp as @pipeline().TriggerTime",
+        caption: "Notebook activity: UpdateWatermark receives PipelineRunTimeStamp = @pipeline().TriggerTime and runs only after the Copy succeeds",
+      },
+      {
+        src: "/projects/Incremental-Shipping/6.png",
+        alt: "Update watermark notebook showing a NameError for PipelineRunTimeStamp",
+        caption: "Debugging: the UPDATE statement failed with a NameError until the timestamp was declared in a parameter cell",
+      },
+    ],
+    results: [
+      // TODO: add run durations and row counts after a fully successful end-to-end run
+      "Incremental pattern designed and wired end to end: Lookup, Copy (Append), and Notebook watermark update chained on success.",
+    ],
+    // github: "your-username/your-repo",
+  },
 ];
 
 export const getProject = (slug: string) => projects.find((p) => p.slug === slug);
