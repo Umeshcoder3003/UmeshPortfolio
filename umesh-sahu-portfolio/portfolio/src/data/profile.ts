@@ -22,28 +22,28 @@ export const about = {
 
 /* ------------------------------------------------------------- Experience */
 /**
- * TODO: replace with your real roles. Add one object per company (newest first).
- * Only add measurable achievements you can stand behind. Leave `achievements`
- * empty if you have no real metrics. Remove `placeholder: true` when done.
+ * Empty for now. When you are ready, uncomment the template below, fill in
+ * your real role (newest first), and remove `placeholder: true`.
+ * Only add measurable achievements you can stand behind.
  */
 export const experience: Experience[] = [
-  {
-    placeholder: true,
-    company: "[COMPANY_NAME]",
-    role: "[ROLE_TITLE]",
-    duration: "[START] to [END / Present]",
-    domain: "[DOMAIN, e.g. Banking, Telecom, Retail]",
-    responsibilities: [
-      "Developed and maintained Oracle database objects: stored procedures, functions, packages, triggers and views.",
-      "Wrote and optimized SQL for reporting, data processing and ETL workloads.",
-      "Supported production systems: debugging failures and performing root cause analysis.",
-    ],
-    contributions: [
-      "Performance tuning of slow queries and database jobs, including partitioning where appropriate.",
-      "Built data transformation and validation logic to keep downstream data consistent.",
-    ],
-    achievements: [],
-  },
+  // {
+  //   placeholder: true,
+  //   company: "[COMPANY_NAME]",
+  //   role: "[ROLE_TITLE]",
+  //   duration: "[START] to [END / Present]",
+  //   domain: "[DOMAIN, e.g. Banking, Telecom, Retail]",
+  //   responsibilities: [
+  //     "Developed and maintained Oracle database objects: stored procedures, functions, packages, triggers and views.",
+  //     "Wrote and optimized SQL for reporting, data processing and ETL workloads.",
+  //     "Supported production systems: debugging failures and performing root cause analysis.",
+  //   ],
+  //   contributions: [
+  //     "Performance tuning of slow queries and database jobs, including partitioning where appropriate.",
+  //     "Built data transformation and validation logic to keep downstream data consistent.",
+  //   ],
+  //   achievements: [],
+  // },
 ];
 
 /* ----------------------------------------------------------------- Skills */
