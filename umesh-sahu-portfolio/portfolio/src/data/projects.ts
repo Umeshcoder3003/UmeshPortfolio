@@ -7,37 +7,7 @@ import type { Project } from "@/types";
  *   3. Add it to the array below.
  */
 export const projects: Project[] = [
-  {
-    slug: "employee-data-quality-etl-pipeline",
-    title: "Employee Data Quality & ETL Pipeline",
-    status: "in-progress",
-    featured: true,
-    summary:
-      "A pipeline that processes employee data and separates valid records from null, invalid and inconsistent ones before publishing a curated dataset.",
-    businessProblem:
-      "Process employee data while identifying null, invalid and inconsistent records.",
-    technologies: ["Python", "PySpark", "Microsoft Fabric", "SQL"],
-    architecture: [
-      { label: "Source", icon: "source" },
-      { label: "Ingestion", icon: "ingestion" },
-      { label: "Validation", icon: "validation" },
-      { label: "Data Quality", icon: "quality" },
-      { label: "Transformation", icon: "transform" },
-      { label: "Curated Dataset", icon: "curated", layer: "gold" },
-    ],
-    concepts: [
-      "Data validation",
-      "Data quality checks",
-      "Layered transformation",
-      "Curated datasets",
-    ],
-    dataQualityTechniques: [
-      "Null detection",
-      "Invalid record detection",
-      "Inconsistency checks",
-    ],
-  },
-
+  
   {
     slug: "granduer-properties-ingestion-pipeline",
     title: "Granduer Properties: Landing-to-Lakehouse Ingestion Pipeline",
