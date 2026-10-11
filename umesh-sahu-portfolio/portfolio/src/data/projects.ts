@@ -226,7 +226,7 @@ export const projects: Project[] = [
     {
     slug: "innovate-solutions-workforce-intelligence-bronze-to-silver",
     title: "Innovate Solutions: Workforce Intelligence from Azure SQL to Lakehouse",
-    status: "completed",
+    status: "complete",
     featured: false,
     summary:
       "A Bronze-to-Silver pipeline in Microsoft Fabric that replaces a manual SQL-export-and-Excel HR workflow. A Fabric Data Pipeline copies employee records from Azure SQL into a Bronze Delta table, and a PySpark notebook quarantines bad records with a reason, collapses duplicates to the latest version, enriches and joins department context, stamps every row, and protects personal data with hashing and masking. Every one of the 332 records that entered Bronze is accounted for: 20 quarantined, 5 duplicates removed, 307 in Silver.",
