@@ -379,6 +379,125 @@ export const projects: Project[] = [
     ],
     // github: "your-username/your-repo",
   },
+    {
+    slug: "crestview-finance-fx-rates-warehouse-ingestion",
+    title: "Crestview Finance: Daily FX Rates from a Public API into the Fabric Warehouse",
+    status: "in-progress",
+    featured: true,
+    summary:
+      "A warehouse-native API ingestion in Microsoft Fabric. A pipeline Web Activity calls the Frankfurter API for daily ECB exchange rates, passes the JSON response to a stored procedure, and T-SQL OPENJSON shreds the nested payload into one clean row per currency in a warehouse table.",
+    businessProblem:
+      "A lender reporting every exposure in US dollars was copying exchange rates from public websites into Excel once a month. Reports ran on conversion rates that could be four weeks old, a 5% overnight euro move (about $55M on a $1.1B euro book) went unseen for weeks, and two risk analysts spent roughly 16 hours a month finding and typing rates.",
+    objective:
+      "Replace the manual monthly copy with an automated daily feed: one table in the Fabric warehouse that every team reads, loaded by a pipeline with no manual rate entry and parsed in T-SQL inside the warehouse.",
+    dataset: {
+      source:
+        "Frankfurter API (https://api.frankfurter.dev/v1/), which publishes European Central Bank reference rates. Request used: latest?base=USD&symbols=EUR,JPY,GBP,AUD.",
+      structure:
+        "One nested JSON payload per day (date, base currency and a rates object holding one value per currency), shredded into one row per currency in Staging.CurrencyRates.",
+      fields: ["RateDate", "BaseCurrency", "TargetCurrency", "RATEVALUE"],
+    },
+    technologies: [
+      "Microsoft Fabric",
+      "Fabric Data Pipeline",
+      "Fabric Warehouse",
+      "T-SQL",
+      "OPENJSON",
+      "Stored Procedures",
+      "REST API",
+      "JSON",
+    ],
+    architecture: [
+      { label: "Frankfurter API", icon: "api", detail: "ECB daily rates" },
+      { label: "Web Activity", icon: "ingestion", detail: "FX_API (GET)" },
+      { label: "sp_InsertRates", icon: "transform", detail: "OPENJSON shredding" },
+      { label: "Staging.CurrencyRates", icon: "warehouse", detail: "One row per currency" },
+    ],
+    concepts: [
+      "Warehouse-native API ingestion",
+      "Shredding nested JSON in T-SQL with OPENJSON and JSON_VALUE",
+      "Passing a Web Activity's output to a stored procedure with @string(activity('FX_API').output)",
+      "Activity chaining: the load runs only if the API call succeeds",
+      "Parsing inside the warehouse instead of reshaping data in the pipeline",
+    ],
+    dataQualityTechniques: [
+      "Typed target schema: DATE, CHAR(3) and DECIMAL(20,6) columns enforce structure on load",
+      "Success-only chaining so the stored procedure never runs on a failed API call",
+      "Post-load validation query to confirm the rows that landed",
+    ],
+    implementation: [
+      "Created the Staging schema and the Staging.CurrencyRates table in the warehouse (RateDate DATE, BaseCurrency CHAR(3), TargetCurrency CHAR(3), RATEVALUE DECIMAL(20,6)).",
+      "Wrote the stored procedure Staging.sp_InsertRates, which takes the whole API response as one NVARCHAR(MAX) parameter (@SampleData).",
+      "Inside the procedure, read the date and base currency with JSON_VALUE and expanded the rates object with OPENJSON, so each currency key and value becomes its own row.",
+      "Built the pipeline Currency_FX_Umesh with a Web activity (FX_API) that calls the Frankfurter API with GET on a Web connection, requesting latest rates against USD.",
+      "Added a Stored procedure activity chained on success of the Web activity, calling [Staging].[sp_InsertRates] with SampleData set to @string(activity('FX_API').output).",
+      "Ran the pipeline, confirmed both activities succeeded, and queried the table to check the loaded rows.",
+    ],
+    screenshots: [
+      {
+        src: "/projects/crestview-fx/1.png",
+        alt: "Warehouse SQL editor showing the sp_InsertRates stored procedure that parses JSON with JSON_VALUE and OPENJSON",
+        caption: "Stored procedure: Staging.sp_InsertRates receives the payload as one string and shreds it with JSON_VALUE and OPENJSON",
+      },
+      {
+        src: "/projects/crestview-fx/2.png",
+        alt: "Web activity FX_API settings with a GET request to a relative URL requesting latest rates against USD",
+        caption: "Web activity: FX_API calls the Frankfurter API with GET, requesting the latest rates against USD",
+      },
+      {
+        src: "/projects/crestview-fx/3.png",
+        alt: "Stored procedure activity settings calling Staging.sp_InsertRates with SampleData set to a string of the FX_API output",
+        caption: "Stored procedure activity: passes the Web activity's response in as SampleData using @string(activity('FX_API').output)",
+      },
+      {
+        src: "/projects/crestview-fx/4.png",
+        alt: "Pipeline run output showing FX_API and Stored procedure1 both succeeded",
+        caption: "Successful run: FX_API (12s) then Stored procedure1 (8s) completed in sequence",
+      },
+      {
+        src: "/projects/crestview-fx/5.png",
+        alt: "SQL query selecting from Staging.CurrencyRates returning four rows of USD exchange rates for 2026-10-16",
+        caption: "Validation: SELECT from Staging.CurrencyRates returns 4 rows for 2026-10-16, one rate per target currency",
+      },
+    ],
+    transformations: [
+      {
+        title: "Shred the nested JSON payload into rows",
+        description:
+          "The API returns one nested document per day. JSON_VALUE pulls the single date and base currency, and OPENJSON expands the rates object so every currency key and rate value becomes its own row in the target table.",
+        language: "sql",
+        code: `CREATE PROC Staging.sp_InsertRates
+  @SampleData NVARCHAR(MAX)
+AS
+BEGIN
+  INSERT INTO Staging.CurrencyRates
+    (RateDate, BaseCurrency, TargetCurrency, RATEVALUE)
+  SELECT
+    CAST(JSON_VALUE(@SampleData, '$.date') AS DATE) AS RateDate,
+    JSON_VALUE(@SampleData, '$.base')               AS BaseCurrency,
+    x.[key]                                         AS TargetCurrency,
+    x.[value]                                       AS RateValue
+  FROM OPENJSON(@SampleData, '$.rates') AS x;
+END`,
+      },
+    ],
+    dataQuality: {
+      schemaValidation:
+        "Target columns are typed (DATE, CHAR(3), DECIMAL(20,6)), so the date and rate values are cast to the correct types when loaded.",
+      dataValidation:
+        "After the run, a SELECT on Staging.CurrencyRates returned 4 rows for 2026-10-16.",
+    },
+    learnings: [
+      "Parsing a nested API payload inside a relational warehouse with OPENJSON",
+      "Handing a Web Activity's run-time output to a stored procedure as a single string parameter",
+      "Keeping raw-to-rows parsing in one place (the stored procedure) rather than in the pipeline",
+    ],
+    results: [
+      "Daily feed pipeline ran end to end: FX_API Web activity (12s), then sp_InsertRates (8s).",
+      "Staging.CurrencyRates returned 4 rows for 2026-10-16 (AUD 1.437000, EUR 0.888650 and GBP 0.749890 visible in the result grid).",
+    ],
+    // github: "https://github.com/your-username/your-repo",
+  },
 ];
 
 export const getProject = (slug: string) => projects.find((p) => p.slug === slug);
