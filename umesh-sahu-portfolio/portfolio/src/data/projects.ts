@@ -435,27 +435,27 @@ export const projects: Project[] = [
     ],
     screenshots: [
       {
-        src: "/projects/crestview-fx/Crestview/1.png",
+        src: "/projects/Crestview/4.png",
         alt: "Warehouse SQL editor showing the sp_InsertRates stored procedure that parses JSON with JSON_VALUE and OPENJSON",
         caption: "Stored procedure: Staging.sp_InsertRates receives the payload as one string and shreds it with JSON_VALUE and OPENJSON",
       },
       {
-        src: "/projects/Crestview/2.png",
+        src: "/projects/Crestview/1.png",
         alt: "Web activity FX_API settings with a GET request to a relative URL requesting latest rates against USD",
         caption: "Web activity: FX_API calls the Frankfurter API with GET, requesting the latest rates against USD",
       },
       {
-        src: "/projects/Crestview/3.png",
+        src: "/projects/Crestview/2.png",
         alt: "Stored procedure activity settings calling Staging.sp_InsertRates with SampleData set to a string of the FX_API output",
         caption: "Stored procedure activity: passes the Web activity's response in as SampleData using @string(activity('FX_API').output)",
       },
       {
-        src: "/projects/Crestview/4.png",
+        src: "/projects/Crestview/5.png",
         alt: "Pipeline run output showing FX_API and Stored procedure1 both succeeded",
         caption: "Successful run: FX_API (12s) then Stored procedure1 (8s) completed in sequence",
       },
       {
-        src: "/projects/Crestview/5.png",
+        src: "/projects/Crestview/3.png",
         alt: "SQL query selecting from Staging.CurrencyRates returning four rows of USD exchange rates for 2026-10-16",
         caption: "Validation: SELECT from Staging.CurrencyRates returns 4 rows for 2026-10-16, one rate per target currency",
       },
