@@ -14,7 +14,7 @@ export const site = {
   // ---- Contact ----------------------------------------------------------
   email: "Umeshnsahu3003@gmail.com",
   linkedin: "https://www.linkedin.com/in/umesh-sahu-385816254",
-  github: "[MY_GITHUB_URL]", // e.g. https://github.com/your-username
+  github: "https://github.com/Umeshcoder3003/UmeshPortfolio/", // e.g. https://github.com/your-username
   resume: "[MY_RESUME_URL]", // e.g. "/resume.pdf" (put the file in /public) or a Drive link
 
   // ---- SEO --------------------------------------------------------------
