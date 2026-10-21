@@ -498,6 +498,171 @@ END`,
     ],
     // github: "https://github.com/your-username/your-repo",
   },
+
+    {
+    slug: "metropolis-inbox-dynamic-router",
+    title: "City of Metropolis: Dynamic Inbox Router",
+    status: "in-progress",
+    featured: true,
+    summary:
+      "A single Microsoft Fabric pipeline that triages a shared department inbox with no manual step. It lists every file, loops over them, routes Police, Parking and 311 files to their Bronze folders by file-name pattern, quarantines anything unrecognised, archives the file and clears the inbox. Based on bootcamp case study FAB03.",
+    businessProblem:
+      "Files from Police, Transport and 311 land in one inbox, and an engineer reads each file name and starts ingestion by hand. Nothing marks a file as processed, so files get loaded twice, missed, or sit in the inbox forever. In the bootcamp scenario, an audit found nearly 12% of expected files were loaded twice or missed because of naming deviations.",
+    objective:
+      "Replace manual triage with one metadata-driven router: every file that enters the inbox ends the cycle in a Bronze folder or in quarantine, and the inbox is left empty.",
+    dataset: {
+      source:
+        "28 files in the CS_3/Metropolis_inbox folder of the LH_Umeshsahu Lakehouse, sent by the Police, Transport and 311 departments.",
+      structure:
+        "Binary files routed by name. The contract is one file-name pattern per department; anything that matches none is treated as unrecognised.",
+      fields: [
+        "Police_Incidents_YYYYMMDD_n.csv",
+        "Parking_Violations_YYYYMMDD_n.json",
+        "311_Service_Requests_YYYYMMDD_n.csv",
+      ],
+    },
+    technologies: [
+      "Microsoft Fabric",
+      "Fabric Data Pipeline",
+      "Lakehouse",
+      "Pipeline expressions",
+    ],
+    architecture: [
+      { label: "Metropolis Inbox", icon: "file", detail: "CS_3 folder" },
+      { label: "Get Metadata", icon: "ingestion", detail: "List files" },
+      { label: "ForEach + Switch", icon: "validation", detail: "Route by file name" },
+      { label: "Bronze / Quarantine", icon: "bronze", layer: "bronze", detail: "Per department" },
+      { label: "Archive", icon: "storage", detail: "Copy processed file" },
+      { label: "Clear Inbox", icon: "transform", detail: "Delete after copy" },
+    ],
+    concepts: [
+      "Metadata-driven control flow: Get Metadata feeds a ForEach loop",
+      "Dynamic routing with a Switch and a pipeline expression on @item().name",
+      "Quarantine on the Default path instead of dropping unknown files",
+      "Binary copy so one Copy activity handles any file format",
+      "Archive then delete, chained on success",
+    ],
+    dataQualityTechniques: [
+      "File-name pattern check (prefix and extension) before a file is routed",
+      "Quarantine of unrecognised files instead of dropping them",
+      "Archive then delete, so a processed file cannot be loaded twice",
+    ],
+    implementation: [
+      "Organised the CS_3 Lakehouse folder with the Metropolis inbox, a Bronze folder for each of the three departments, an archive folder and a quarantine folder.",
+      "Added a Get Metadata activity (Get File Names) on the inbox in Binary format, returning the child items (every file name).",
+      "Passed that list to a ForEach activity (Iterate) so each file is handled on its own. Sequential is off, with a batch count of 50.",
+      "Inside the loop, added a Switch whose expression lowercases the file name and checks the department prefix and file extension, returning police, parking, 311 or other.",
+      "In each of the three department cases, added a Copy activity from the inbox (file name set to @item().name) to that department's Bronze folder, with Binary at both ends.",
+      "In the Default case, added a Copy activity that sends the file to the quarantine folder.",
+      "After the Switch succeeds, an archive Copy activity copies the file to the archive folder, then a Delete activity removes it from the inbox.",
+    ],
+    screenshots: [
+      {
+        src: "/projects/metropolis/1.png",
+        alt: "Lakehouse explorer showing the CS_3 folder with the inbox holding 28 files beside the Bronze, archive and quarantine folders",
+        caption: "Starting state: the inbox holds 28 files from all departments, next to the Bronze, archive and quarantine folders",
+      },
+      {
+        src: "/projects/metropolis/2.png",
+        alt: "Get Metadata activity settings reading the CS_3 inbox folder in Binary format with a Child items field",
+        caption: "List: Get File Names reads the inbox as Binary and returns every file name for the loop",
+      },
+      {
+        src: "/projects/metropolis/3.png",
+        alt: "ForEach activity settings iterating over the output of Get File Names with a batch count of 50, containing Switch, archive copy and Delete",
+        caption: "Loop: ForEach runs the Switch, archive Copy and Delete for each file, up to 50 in parallel",
+      },
+      {
+        src: "/projects/metropolis/4.png",
+        alt: "Switch activity with a Default case for quarantine and cases for police, parking and 311",
+        caption: "Route: a Switch with one case per department and a Default case that handles everything else",
+      },
+      {
+        src: "/projects/metropolis/5.png",
+        alt: "Pipeline expression builder showing nested if functions that check the lowercase file name prefix and extension",
+        caption: "Routing rule: the expression checks the department prefix and extension and returns police, parking, 311 or other",
+      },
+      {
+        src: "/projects/metropolis/6.png",
+        alt: "Police Copy activity source using file path type File path with the inbox folder and a file name of @item().name",
+        caption: "Police branch source: copies the current file from the inbox using @item().name, Binary format",
+      },
+      {
+        src: "/projects/metropolis/7.png",
+        alt: "Police Copy activity destination writing to the police Bronze folder in Binary format",
+        caption: "Police branch destination: writes the file to the police Bronze folder",
+      },
+      {
+        src: "/projects/metropolis/8.png",
+        alt: "Parking Copy activity source using the inbox folder and a file name of @item().name",
+        caption: "Parking branch source: copies the current file from the inbox",
+      },
+      {
+        src: "/projects/metropolis/9.png",
+        alt: "Parking Copy activity destination writing to the parking Bronze folder in Binary format",
+        caption: "Parking branch destination: writes the file to the parking Bronze folder",
+      },
+      {
+        src: "/projects/metropolis/10.png",
+        alt: "311 Copy activity source using the inbox folder and a file name of @item().name",
+        caption: "311 branch source: copies the current file from the inbox",
+      },
+      {
+        src: "/projects/metropolis/11.png",
+        alt: "311 Copy activity destination writing to the 311 Bronze folder in Binary format",
+        caption: "311 branch destination: writes the file to the 311 Bronze folder",
+      },
+      {
+        src: "/projects/metropolis/12.png",
+        alt: "Quarantine Copy activity source in the Default case using the inbox folder and a file name of @item().name",
+        caption: "Default branch source: any file that matched no pattern is picked up from the inbox",
+      },
+      {
+        src: "/projects/metropolis/13.png",
+        alt: "Quarantine Copy activity destination writing to the quarantine folder in Binary format",
+        caption: "Default branch destination: the unrecognised file is written to the quarantine folder",
+      },
+      {
+        src: "/projects/metropolis/14.png",
+        alt: "Archive Copy activity source reading the current file from the inbox folder",
+        caption: "Archive step source: after the Switch succeeds, the same file is read from the inbox",
+      },
+      {
+        src: "/projects/metropolis/15.png",
+        alt: "Archive Copy activity destination writing to the Archived folder in Binary format",
+        caption: "Archive step destination: the file is copied to the archive folder",
+      },
+      {
+        src: "/projects/metropolis/16.png",
+        alt: "Delete activity source pointing at the inbox folder with a file name of @item().name",
+        caption: "Clean-up: the Delete activity removes the file from the inbox once it has been archived",
+      },
+    ],
+    dataQuality: {
+      dataValidation:
+        "A file is routed only if its lowercase name starts with the department prefix and ends with the expected extension (.csv or .json).",
+      invalidRecords:
+        "A file whose name matches no pattern is treated as unrecognised and is not loaded to any Bronze folder.",
+      quarantine:
+        "The Default case copies unrecognised files to a quarantine folder for review instead of leaving them in the inbox or dropping them.",
+    },
+    challenges: [
+      {
+        challenge:
+          "The routing Copy activity failed on its first run: the file name expression had been placed in the Connection field and the source used a wildcard path.",
+        solution:
+          "Selected the Lakehouse connection, switched the source to File path with the inbox folder and @item().name as the file name, and set both source and destination to Binary.",
+      },
+    ],
+    learnings: [
+      "Driving a pipeline from file metadata with Get Metadata and ForEach",
+      "Using a Switch and a dynamic expression to route files by naming contract",
+      "Why a quarantine path is needed to avoid unprocessed files piling up",
+      "Chaining Delete after Copy on success so a failed copy never loses a file",
+    ],
+    // TODO: add a run-output screenshot, the folder counts after a run, and the schedule, then set status to "complete".
+    // github: "https://github.com/your-username/your-repo",
+  },
 ];
 
 export const getProject = (slug: string) => projects.find((p) => p.slug === slug);
