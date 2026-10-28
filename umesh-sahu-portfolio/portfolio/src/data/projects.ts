@@ -666,7 +666,7 @@ END`,
   {
     slug: "north-meridian-retail-unified-commerce-analytics",
     title: "NorthMeridian Retail Group: Unified Commerce Analytics",
-    status: "completed",
+    status: "in-progress",
     featured: true,
     summary:
       "A full Medallion lift for a multi-channel retail group stuck on five-way SQL joins and three copies of a region CSV. Four Azure SQL tables and a RegionMapping CSV flow through Bronze, Silver and a Gold star schema — Dim_Customers, Dim_Products, Dim_Date and a pre-aggregated Fact_Sales — orchestrated by a Master Pipeline that runs daily at 06:00 and finishes before the 08:00 reporting window.",
