@@ -731,186 +731,156 @@ END`,
       "Scheduled Master_pipeline with a daily trigger at 06:00 to meet the 08:00 reporting SLA.",
     ],
     screenshots: [
-      {
-        src: "/projects/NorthMeridian/1.png",
-        alt: "PL_Cust_Products_load pipeline canvas showing Load_Customers and Load_Products copy activities",
-        caption: "Pipeline 4 (Dimensions): PL_Cust_Products_load with two Copy activities that land Customers and Products from Azure SQL into Bronze Delta tables",
-      },
-      {
-        src: "/projects/NorthMeridian/2.png",
-        alt: "Load_Customers Copy activity source settings reading NorthMeridianRetail.Customers from Azure SQL",
-        caption: "Load_Customers source: reads the full NorthMeridianRetail.Customers table from the msfabricbootcamp Azure SQL database",
-      },
-      {
-        src: "/projects/NorthMeridian/3.png",
-        alt: "Load_Customers Copy activity destination settings writing to the Bronze Customers Delta table with Overwrite",
-        caption: "Load_Customers destination: raw Customers data lands in the Lakehouse Bronze layer with Overwrite, preserving full-reload idempotency",
-      },
-      {
-        src: "/projects/NorthMeridian/4.png",
-        alt: "Load_Products Copy activity source settings reading NorthMeridianRetail.Products from Azure SQL",
-        caption: "Load_Products source: reads all 200 rows from NorthMeridianRetail.Products, including UnitPrice which drives TotalSalesAmount in Gold",
-      },
-      {
-        src: "/projects/NorthMeridian/5.png",
-        alt: "Load_Products Copy activity destination settings writing to the Bronze Products Delta table with Overwrite",
-        caption: "Load_Products destination: raw Products land in Bronze with Overwrite so the dimension is always fully refreshed",
-      },
-      {
-        src: "/projects/NorthMeridian/6.png",
-        alt: "NorthMeridian.cfg_Watermark Delta table created in NB_Watermark_id notebook showing TableName and WatermarkValue columns",
-        caption: "Watermark table: NB_Watermark_id notebook creates NorthMeridian.cfg_Watermark and seeds the initial watermark after the batch loads complete",
-      },
-      {
-        src: "/projects/NorthMeridian/7.png",
-        alt: "ControlTable rows showing SalesID and OrderID slice boundaries for the batch load pipelines",
-        caption: "ControlTable: one row per 1,000-row slice (SalesID 50001–54000 and OrderID 70000–73999) so a failed slice reruns without reloading the others",
-      },
-      {
-        src: "/projects/NorthMeridian/8.png",
-        alt: "PL_Orders_Sales_Batch_Load pipeline canvas with a ForEach activity looping over ControlTable rows",
-        caption: "Pipeline 1 & 2 (Batch): ForEach iterates over ControlTable rows, firing one Copy per slice to append Sales and Orders to Bronze",
-      },
-      {
-        src: "/projects/NorthMeridian/9.png",
-        alt: "Copy activity inside ForEach reading a SalesID-range slice from Azure SQL using a parameterised query",
-        caption: "Batch Copy source: parameterised query filters by SalesID range from the current ControlTable row, loading one 1,000-row slice at a time",
-      },
-      {
-        src: "/projects/NorthMeridian/10.png",
-        alt: "Copy activity destination inside ForEach appending the Sales slice to the Bronze Sales Delta table",
-        caption: "Batch Copy destination: Append action adds each slice to Bronze Sales without touching previously loaded slices",
-      },
-      {
-        src: "/projects/NorthMeridian/11.png",
-        alt: "PL_Orders_Sales_Batch_Load successful run history showing all eight slices succeeded",
-        caption: "Batch run complete: all eight slices (four Sales, four Orders) succeeded, loading the full 4,000-row history into Bronze",
-      },
-      {
-        src: "/projects/NorthMeridian/12.png",
-        alt: "PL_Orders_Sales_Incr_load pipeline canvas showing Lookup, Copy and Update_watermark notebook chained on success",
-        caption: "Pipeline 3 (Incremental): Lookup reads the watermark, Copy appends only rows with SalesID/OrderID above it, Update_watermark notebook advances the mark on success",
-      },
-      {
-        src: "/projects/NorthMeridian/13.png",
-        alt: "Lookup activity settings reading NorthMeridian.cfg_Watermark with First row only enabled",
-        caption: "Lookup activity: reads the current WatermarkValue from cfg_Watermark (first row only) to define the lower bound of the incremental filter",
-      },
-      {
-        src: "/projects/NorthMeridian/14.png",
-        alt: "Incremental Copy activity source settings filtering Sales rows with SalesID greater than the Lookup watermark",
-        caption: "Incremental Copy source: WHERE SalesID > @{activity('Lookup').output.firstRow.WatermarkValue} ensures only net-new rows are loaded on each daily run",
-      },
-      {
-        src: "/projects/NorthMeridian/15.png",
-        alt: "Update_watermark notebook updating cfg_Watermark to the maximum SalesID seen in the current run",
-        caption: "Update_watermark notebook: advances cfg_Watermark to the highest ID loaded, runs only after Copy succeeds so a failed load is retried in full next run",
-      },
-      {
-        src: "/projects/NorthMeridian/16.png",
-        alt: "Data_cleaning notebook reading Bronze Customers into customers_df and displaying sample rows",
-        caption: "Bronze to Silver – Customers: Bronze Customers table read into customers_df; 1,000 rows with StateCode as the join key to RegionMapping",
-      },
-      {
-        src: "/projects/NorthMeridian/17.png",
-        alt: "RegionMapping.csv loaded from Lakehouse Files and joined to customers_df on StateCode",
-        caption: "Region join: RegionMapping.csv (20 state-to-region rows) loaded and left-joined on StateCode, adding the single authoritative RegionName to every customer row",
-      },
-      {
-        src: "/projects/NorthMeridian/18.png",
-        alt: "Silver_Customers_df with FullName derived from FirstName and LastName and RegionName denormalised",
-        caption: "Silver Customers: FirstName and LastName concatenated into FullName; RegionName denormalised from the CSV, eliminating the three divergent desktop copies",
-      },
-      {
-        src: "/projects/NorthMeridian/19.png",
-        alt: "Silver_Customers_df written to LH_Umeshsahu.NorthMeridian.Silver_Customers with overwrite mode",
-        caption: "Silver_Customers written to Delta with overwrite so each run produces a fresh, clean dimension that matches the current source",
-      },
-      {
-        src: "/projects/NorthMeridian/20.png",
-        alt: "Data_cleaning notebook reading Bronze Products into Products_df and displaying UnitPrice column",
-        caption: "Bronze to Silver – Products: Bronze Products read into Products_df; UnitPrice rounded to 2 decimal places before Silver write to prevent floating-point accumulation in Fact_Sales",
-      },
-      {
-        src: "/projects/NorthMeridian/21.png",
-        alt: "Products_df with UnitPrice rounded to 2 decimals displayed before writing Silver_Products",
-        caption: "UnitPrice rounding: round(col('UnitPrice'), 2) applied so TotalSalesAmount in Gold reconciles to the cent against Bronze",
-      },
-      {
-        src: "/projects/NorthMeridian/22.png",
-        alt: "Silver_Products written to LH_Umeshsahu.NorthMeridian.Silver_Products with overwrite mode confirmed",
-        caption: "Silver_Products written to Delta (overwrite); all 200 products available for the Gold join without any silent row loss",
-      },
-      {
-        src: "/projects/NorthMeridian/23.png",
-        alt: "Data_cleaning notebook reading Bronze Sales and Orders tables into Sales_df and Orders_df",
-        caption: "Bronze to Silver – Sales: Bronze Sales (4,000 rows) and Orders (4,000 rows) read into separate DataFrames ready for the three-way join",
-      },
-      {
-        src: "/projects/NorthMeridian/24.png",
-        alt: "Sales_df joined to Orders_df on salesid and then to Products_df on productid with left joins",
-        caption: "Three-way join: Sales left-joined to Orders on salesid, then to Products on productid — left joins ensure no sale is silently dropped if a key is missing",
-      },
-      {
-        src: "/projects/NorthMeridian/25.png",
-        alt: "TotalSalesAmount computed as round(Quantity times UnitPrice, 2) on the joined Silver_Sales DataFrame",
-        caption: "TotalSalesAmount derived: round(col('Quantity') * col('Unitprice'), 2) computed on the joined frame; this is the measure Gold reconciles to the cent",
-      },
-      {
-        src: "/projects/NorthMeridian/26.png",
-        alt: "Silver_to_Gold notebook generating Dim_Customers with monotonically_increasing_id surrogate keys",
-        caption: "Dim_Customers: surrogate CustomerKey generated with monotonically_increasing_id(); CustomerID retained as natural key for reconciliation; RegionName carried through from Silver",
-      },
-      {
-        src: "/projects/NorthMeridian/27.png",
-        alt: "Silver_to_Gold notebook generating Dim_Products with ProductKey surrogates and UnitPrice",
-        caption: "Dim_Products: surrogate ProductKey assigned; ProductID kept as natural key; UnitPrice and Category carried into Gold for drill-down analysis",
-      },
-      {
-        src: "/projects/NorthMeridian/28.png",
-        alt: "Dim_Date generated as a date spine from the first to last SalesDate with DateKey in yyyyMMdd format",
-        caption: "Dim_Date: continuous date spine generated between the earliest and latest SalesDate; DateKey formatted as yyyyMMdd integer; Year and Quarter attributes added",
-      },
-      {
-        src: "/projects/NorthMeridian/29.png",
-        alt: "Fact_Sales aggregated by DateKey, CustomerKey, ProductKey and Status with TotalSalesAmount, TotalQuantity and OrderCount",
-        caption: "Fact_Sales: Silver_Sales joined to all three dimensions and pre-aggregated by DateKey × CustomerKey × ProductKey × Status; TotalSalesAmount, TotalQuantity and OrderCount as measures",
-      },
-      {
-        src: "/projects/NorthMeridian/30.png",
-        alt: "Data_cleaning notebook Silver_Products written and Silver_Sales join beginning, showing Products_df.write.saveAsTable Silver_Products and start of silver_Sales_df join code",
-        caption: "Data_cleaning notebook: Silver_Products saved (9 sec); Silver_Sales section begins — Sales joined to Orders on salesid, then to Products on productid, with TotalSalesAmount computed",
-      },
-      {
-        src: "/projects/NorthMeridian/31.png",
-        alt: "Silver_Sales_df join completed and written to LH_Umeshsahu.NorthMeridian.Silver_sales with overwrite mode in 5 seconds",
-        caption: "Silver_sales saved: three-way join confirmed (2 sec 303 ms) and written to NorthMeridian.Silver_sales with overwrite in 5 sec 813 ms",
-      },
-      {
-        src: "/projects/NorthMeridian/32.png",
-        alt: "Master_pipeline canvas showing CUST_PROD_LOAD invoking PL_Cust_Products_load as the first step, settings pane open",
-        caption: "Master_pipeline — step 1: CUST_PROD_LOAD invokes PL_Cust_Products_load (Fabric type, Group 6D workspace) to refresh Customers and Products into Bronze",
-      },
-      {
-        src: "/projects/NorthMeridian/33.png",
-        alt: "Master_pipeline with SALES_ORDERS_L activity selected, settings showing Pipeline equals PL_Orders_Sales_Incr_load",
-        caption: "Master_pipeline — step 2: SALES_ORDERS_L invokes PL_Orders_Sales_Incr_load after CUST_PROD_LOAD succeeds, appending only net-new Sales and Orders rows to Bronze",
-      },
-      {
-        src: "/projects/NorthMeridian/34.png",
-        alt: "Master_pipeline with Clean_data notebook activity selected, settings showing Notebook equals Data_cleaning in Group 6D workspace",
-        caption: "Master_pipeline — step 3: Clean_data notebook activity runs Data_cleaning (Bronze → Silver) after the incremental load succeeds; no base parameters needed",
-      },
-      {
-        src: "/projects/NorthMeridian/35.png",
-        alt: "Master_pipeline with Silver_to_Gold notebook activity selected, settings showing Notebook equals Silver_to_Gold in Group 6D workspace",
-        caption: "Master_pipeline — step 4: Silver_to_Gold notebook activity builds the four Gold tables (Dim_Customers, Dim_Products, Dim_Date, Fact_Sales) after Silver is clean",
-      },
-      {
-        src: "/projects/NorthMeridian/36.png",
-        alt: "Master_pipeline with Semantic model refresh1 activity selected, connection set to PowerBIDatasets Umesh.Sahu in Group 6D workspace",
-        caption: "Master_pipeline — step 5: Semantic model refresh1 triggers the Direct Lake Power BI Semantic Model refresh after Gold is written, completing the daily chain before 08:00",
-      },
+      screenshots: [
+  {
+    url: "/projects/NorthMeridian/1.jpg",
+    description: "Configuring the Azure SQL Database source connection for loading customer data in a Microsoft Fabric data pipeline."
+  },
+  {
+    url: "/projects/NorthMeridian/2.jpg",
+    description: "Setting up the destination table 'NorthMeridian.Bronze_customer' within the OneLake Lakehouse in the ingestion pipeline."
+  },
+  {
+    url: "/projects/NorthMeridian/3.jpg",
+    description: "Configuring source parameters and database table connections for ingesting product records from Azure SQL into the bronze layer."
+  },
+  {
+    url: "/projects/NorthMeridian/4.jpg",
+    description: "Defining the destination settings and table action (Overwrite) for loading product data into 'NorthMeridian.Bronze_Products'."
+  },
+  {
+    url: "/projects/NorthMeridian/5.jpg",
+    description: "PySpark notebook cell creating the configuration watermark table (`NorthMeridian.cfg_Watermark`) to track incremental loads."
+  },
+  {
+    url: "/projects/NorthMeridian/6.jpg",
+    description: "Overview of the incremental load data pipeline (`PL_Orders_Sales_Incr_load`) utilizing watermark filtering and lookup activities."
+  },
+  {
+    url: "/projects/NorthMeridian/7.jpg",
+    description: "Pipeline expression builder configuring filter conditions using system variables and item watermark columns for order tracking."
+  },
+  {
+    url: "/projects/NorthMeridian/8.jpg",
+    description: "Configuring sales watermark filter conditions in the expression builder for incremental data ingestion."
+  },
+  {
+    url: "/projects/NorthMeridian/9.jpg",
+    description: "Dynamic query configuration in the Copy Data activity pulling incremental order records based on the last watermark value."
+  },
+  {
+    url: "/projects/NorthMeridian/10.jpg",
+    description: "Setting destination table mapping and properties for incremental order loads into the bronze lakehouse table."
+  },
+  {
+    url: "/projects/NorthMeridian/11.jpg",
+    description: "Dynamic query setup for incremental sales data loading using watermark tracking values."
+  },
+  {
+    url: "/projects/NorthMeridian/12.jpg",
+    description: "Configuring destination settings for incremental sales data load into 'NorthMeridian.Bronze_Sales'."
+  },
+  {
+    url: "/projects/NorthMeridian/13.jpg",
+    description: "Adding the watermark update notebook activity at the completion of the incremental data pipeline."
+  },
+  {
+    url: "/projects/NorthMeridian/14.jpg",
+    description: "PySpark code snippet inside the watermark update notebook extracting max IDs and updating the `cfg_Watermark` table."
+  },
+  {
+    url: "/projects/NorthMeridian/15.jpg",
+    description: "Executing batch load configuration and insert statements for batch data loading in Spark SQL."
+  },
+  {
+    url: "/projects/NorthMeridian/16.jpg",
+    description: "Query execution and table validation for batch-loaded bronze orders and sales data."
+  },
+  {
+    url: "/projects/NorthMeridian/17.jpg",
+    description: "Overview of the `PL_Orders_Sales_Batch_Load` pipeline containing lookup activities, filters, and ForEach loops."
+  },
+  {
+    url: "/projects/NorthMeridian/18.jpg",
+    description: "Pipeline expression builder filtering batch load items for source tables matching 'ORDERS'."
+  },
+  {
+    url: "/projects/NorthMeridian/19.jpg",
+    description: "Pipeline expression builder filtering batch load items for source tables matching 'SALES'."
+  },
+  {
+    url: "/projects/NorthMeridian/20.jpg",
+    description: "Configuring sequential batch execution and items array pointing to filtered sales outputs."
+  },
+  {
+    url: "/projects/NorthMeridian/21.jpg",
+    description: "Configuring dynamic query properties within the Orders Copy Data activity inside the `ORDERS_FOREACH` loop."
+  },
+  {
+    url: "/projects/NorthMeridian/22.jpg",
+    description: "Setting destination sink table mappings for the orders copy activity in the batch pipeline."
+  },
+  {
+    url: "/projects/NorthMeridian/23.jpg",
+    description: "Configuring ForEach iterator settings for the sales batch load loop."
+  },
+  {
+    url: "/projects/NorthMeridian/24.jpg",
+    description: "Configuring source database query parameters for running dynamic queries inside batch data copy activities."
+  },
+  {
+    url: "/projects/NorthMeridian/25.jpg",
+    description: "Configuring destination settings for the sales batch copy activity pointing to Bronze sales."
+  },
+  {
+    url: "/projects/NorthMeridian/26.jpg",
+    description: "Data cleaning notebook initializing PySpark functions and creating DataFrames from bronze lakehouse tables and CSV region maps."
+  },
+  {
+    url: "/projects/NorthMeridian/27.jpg",
+    description: "Executing customer data transformations, joining customer data with region mapping tables, and selecting formatted columns."
+  },
+  {
+    url: "/projects/NorthMeridian/28.jpg",
+    description: "Displaying transformed customer data preview and persisting the cleaned DataFrame into the silver layer table (`silver_customer`)."
+  },
+  {
+    url: "/projects/NorthMeridian/29.jpg",
+    description: "Displaying product data preview with cleaned categories and unit prices in the Spark notebook."
+  },
+  {
+    url: "/projects/NorthMeridian/30.jpg",
+    description: "Joining sales and orders DataFrames, calculating total sales amounts with rounded multiplications, and writing cleaned data to silver tables."
+  },
+  {
+    url: "/projects/NorthMeridian/31.jpg",
+    description: "Executing silver sales transformation notebook and saving the final processed DataFrame to `NorthMeridian.Silver_sales`."
+  },
+  {
+    url: "/projects/NorthMeridian/32.jpg",
+    description: "Configuring the Master Pipeline (`Master_pipeline`) invocation activity for customer and product load (`PL_Cust_Products_load`)."
+  },
+  {
+    url: "/projects/NorthMeridian/33.jpg",
+    description: "Configuring the master pipeline invocation activity for sales and orders incremental load (`PL_Orders_Sales_Incr_load`)."
+  },
+  {
+    url: "/projects/NorthMeridian/34.jpg",
+    description: "Setting up the data cleaning notebook step (`Clean_data`) sequentially within the master orchestration pipeline."
+  },
+  {
+    url: "/projects/NorthMeridian/35.jpg",
+    description: "Configuring the Silver-to-Gold transformation notebook step (`Silver_to_Gold`) in the master data engineering pipeline."
+  },
+  {
+    url: "/projects/NorthMeridian/36.jpg",
+    description: "Adding and configuring the Semantic Model Refresh activity at the end of the master pipeline workflow."
+  },
+  {
+    url: "/projects/NorthMeridian/37.jpg",
+    description: "Power BI reporting dashboard visualizing sales amounts by region, category, and dimensions using the star schema data model."
+  },
+
     ],
     results: [
       "Full Medallion pipeline built end to end: Bronze batch loads (8 ControlTable slices), incremental daily load, Silver cleanse and join, Gold star schema and Power BI Semantic Model refresh, all chained in a single Master Pipeline.",
