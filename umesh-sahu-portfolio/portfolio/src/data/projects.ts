@@ -731,156 +731,191 @@ END`,
       "Scheduled Master_pipeline with a daily trigger at 06:00 to meet the 08:00 reporting SLA.",
     ],
     screenshots: [
-     
   {
-    url: "/projects/NorthMeridian/1.jpg",
-    description: "Configuring the Azure SQL Database source connection for loading customer data in a Microsoft Fabric data pipeline."
+    src: "/projects/NorthMeridian/1.jpg",
+    alt: "Configuring Azure SQL Database source connection for loading customer data in a Microsoft Fabric data pipeline",
+    caption: "Source setup: connecting to the Azure SQL Database to fetch customer records for the ingestion pipeline"
   },
   {
-    url: "/projects/NorthMeridian/2.jpg",
-    description: "Setting up the destination table 'NorthMeridian.Bronze_customer' within the OneLake Lakehouse in the ingestion pipeline."
+    src: "/projects/NorthMeridian/2.jpg",
+    alt: "Setting up the destination table NorthMeridian.Bronze_customer within the OneLake Lakehouse",
+    caption: "Bronze destination: mapping customer data ingestion into the Lakehouse bronze layer table"
   },
   {
-    url: "/projects/NorthMeridian/3.jpg",
-    description: "Configuring source parameters and database table connections for ingesting product records from Azure SQL into the bronze layer."
+    src: "/projects/NorthMeridian/3.jpg",
+    alt: "Configuring source parameters and database table connections for ingesting product records from Azure SQL",
+    caption: "Product source: configuring database connections and query definitions for product data ingestion"
   },
   {
-    url: "/projects/NorthMeridian/4.jpg",
-    description: "Defining the destination settings and table action (Overwrite) for loading product data into 'NorthMeridian.Bronze_Products'."
+    src: "/projects/NorthMeridian/4.jpg",
+    alt: "Defining destination settings and table action Overwrite for loading product data into NorthMeridian.Bronze_Products",
+    caption: "Product destination: setting table overwrite actions to load product data into the bronze layer"
   },
   {
-    url: "/projects/NorthMeridian/5.jpg",
-    description: "PySpark notebook cell creating the configuration watermark table (`NorthMeridian.cfg_Watermark`) to track incremental loads."
+    src: "/projects/NorthMeridian/5.jpg",
+    alt: "PySpark notebook cell creating the configuration watermark table NorthMeridian.cfg_Watermark to track incremental loads",
+    caption: "Watermark table setup: initializing the configuration table in Spark SQL to manage incremental data tracking"
   },
   {
-    url: "/projects/NorthMeridian/6.jpg",
-    description: "Overview of the incremental load data pipeline (`PL_Orders_Sales_Incr_load`) utilizing watermark filtering and lookup activities."
+    src: "/projects/NorthMeridian/6.jpg",
+    alt: "Overview of the incremental load data pipeline PL_Orders_Sales_Incr_load utilizing watermark filtering and lookup activities",
+    caption: "Pipeline architecture: overview of the incremental load data pipeline using watermarks and lookups"
   },
   {
-    url: "/projects/NorthMeridian/7.jpg",
-    description: "Pipeline expression builder configuring filter conditions using system variables and item watermark columns for order tracking."
+    src: "/projects/NorthMeridian/7.jpg",
+    alt: "Pipeline expression builder configuring filter conditions using system variables and item watermark columns for order tracking",
+    caption: "Expression builder: setting up conditional logic with watermark columns for order data filtering"
   },
   {
-    url: "/projects/NorthMeridian/8.jpg",
-    description: "Configuring sales watermark filter conditions in the expression builder for incremental data ingestion."
+    src: "/projects/NorthMeridian/8.jpg",
+    alt: "Configuring sales watermark filter conditions in the expression builder for incremental data ingestion",
+    caption: "Sales filter logic: configuring expression parameters to filter incremental sales data streams"
   },
   {
-    url: "/projects/NorthMeridian/9.jpg",
-    description: "Dynamic query configuration in the Copy Data activity pulling incremental order records based on the last watermark value."
+    src: "/projects/NorthMeridian/9.jpg",
+    alt: "Dynamic query configuration in the Copy Data activity pulling incremental order records based on the last watermark value",
+    caption: "Dynamic query: fetching incremental order records using dynamic filter expressions"
   },
   {
-    url: "/projects/NorthMeridian/10.jpg",
-    description: "Setting destination table mapping and properties for incremental order loads into the bronze lakehouse table."
+    src: "/projects/NorthMeridian/10.jpg",
+    alt: "Setting destination table mapping and properties for incremental order loads into the bronze lakehouse table",
+    caption: "Order sink mapping: configuring target table mappings for incremental order ingestion"
   },
   {
-    url: "/projects/NorthMeridian/11.jpg",
-    description: "Dynamic query setup for incremental sales data loading using watermark tracking values."
+    src: "/projects/NorthMeridian/11.jpg",
+    alt: "Dynamic query setup for incremental sales data loading using watermark tracking values",
+    caption: "Sales dynamic query: writing queries to extract updated sales rows based on watermark metadata"
   },
   {
-    url: "/projects/NorthMeridian/12.jpg",
-    description: "Configuring destination settings for incremental sales data load into 'NorthMeridian.Bronze_Sales'."
+    src: "/projects/NorthMeridian/12.jpg",
+    alt: "Configuring destination settings for incremental sales data load into NorthMeridian.Bronze_Sales",
+    caption: "Sales sink mapping: defining destination table properties for incremental sales data"
   },
   {
-    url: "/projects/NorthMeridian/13.jpg",
-    description: "Adding the watermark update notebook activity at the completion of the incremental data pipeline."
+    src: "/projects/NorthMeridian/13.jpg",
+    alt: "Adding the watermark update notebook activity at the completion of the incremental data pipeline",
+    caption: "Pipeline completion: appending the watermark update notebook activity to conclude the run"
   },
   {
-    url: "/projects/NorthMeridian/14.jpg",
-    description: "PySpark code snippet inside the watermark update notebook extracting max IDs and updating the `cfg_Watermark` table."
+    src: "/projects/NorthMeridian/14.jpg",
+    alt: "PySpark code snippet inside the watermark update notebook extracting max IDs and updating the cfg_Watermark table",
+    caption: "Watermark update script: PySpark code calculating maximum IDs to advance watermark tracking values"
   },
   {
-    url: "/projects/NorthMeridian/15.jpg",
-    description: "Executing batch load configuration and insert statements for batch data loading in Spark SQL."
+    src: "/projects/NorthMeridian/15.jpg",
+    alt: "Executing batch load configuration and insert statements for batch data loading in Spark SQL",
+    caption: "Batch execution: running Spark SQL insert commands to configure batch data loading steps"
   },
   {
-    url: "/projects/NorthMeridian/16.jpg",
-    description: "Query execution and table validation for batch-loaded bronze orders and sales data."
+    src: "/projects/NorthMeridian/16.jpg",
+    alt: "Query execution and table validation for batch-loaded bronze orders and sales data",
+    caption: "Data validation: executing queries to verify row counts and integrity of batch-loaded tables"
   },
   {
-    url: "/projects/NorthMeridian/17.jpg",
-    description: "Overview of the `PL_Orders_Sales_Batch_Load` pipeline containing lookup activities, filters, and ForEach loops."
+    src: "/projects/NorthMeridian/17.jpg",
+    alt: "Overview of the PL_Orders_Sales_Batch_Load pipeline containing lookup activities, filters, and ForEach loops",
+    caption: "Batch pipeline overview: inspecting the orchestrator pipeline structured with loops and filters"
   },
   {
-    url: "/projects/NorthMeridian/18.jpg",
-    description: "Pipeline expression builder filtering batch load items for source tables matching 'ORDERS'."
+    src: "/projects/NorthMeridian/18.jpg",
+    alt: "Pipeline expression builder filtering batch load items for source tables matching ORDERS",
+    caption: "Filter condition: configuring expressions to isolate batch configurations for orders"
   },
   {
-    url: "/projects/NorthMeridian/19.jpg",
-    description: "Pipeline expression builder filtering batch load items for source tables matching 'SALES'."
+    src: "/projects/NorthMeridian/19.jpg",
+    alt: "Pipeline expression builder filtering batch load items for source tables matching SALES",
+    caption: "Sales batch filter: isolating sales source configurations using pipeline expressions"
   },
   {
-    url: "/projects/NorthMeridian/20.jpg",
-    description: "Configuring sequential batch execution and items array pointing to filtered sales outputs."
+    src: "/projects/NorthMeridian/20.jpg",
+    alt: "Configuring sequential batch execution and items array pointing to filtered sales outputs",
+    caption: "Sequential iteration: mapping filtered sales outputs into the sequential ForEach loop"
   },
   {
-    url: "/projects/NorthMeridian/21.jpg",
-    description: "Configuring dynamic query properties within the Orders Copy Data activity inside the `ORDERS_FOREACH` loop."
+    src: "/projects/NorthMeridian/21.jpg",
+    alt: "Configuring dynamic query properties within the Orders Copy Data activity inside the ORDERS_FOREACH loop",
+    caption: "Loop query configuration: assigning dynamic run queries to copy activities within the orders loop"
   },
   {
-    url: "/projects/NorthMeridian/22.jpg",
-    description: "Setting destination sink table mappings for the orders copy activity in the batch pipeline."
+    src: "/projects/NorthMeridian/22.jpg",
+    alt: "Setting destination sink table mappings for the orders copy activity in the batch pipeline",
+    caption: "Orders sink setup: routing data outputs to the bronze orders table within the loop"
   },
   {
-    url: "/projects/NorthMeridian/23.jpg",
-    description: "Configuring ForEach iterator settings for the sales batch load loop."
+    src: "/projects/NorthMeridian/23.jpg",
+    alt: "Configuring ForEach iterator settings for the sales batch load loop",
+    caption: "Sales loop setup: binding sales filter outputs to the batch iteration items property"
   },
   {
-    url: "/projects/NorthMeridian/24.jpg",
-    description: "Configuring source database query parameters for running dynamic queries inside batch data copy activities."
+    src: "/projects/NorthMeridian/24.jpg",
+    alt: "Configuring source database query parameters for running dynamic queries inside batch data copy activities",
+    caption: "Query parameters: setting source database options to evaluate dynamic SQL strings"
   },
   {
-    url: "/projects/NorthMeridian/25.jpg",
-    description: "Configuring destination settings for the sales batch copy activity pointing to Bronze sales."
+    src: "/projects/NorthMeridian/25.jpg",
+    alt: "Configuring destination settings for the sales batch copy activity pointing to Bronze sales",
+    caption: "Sales destination target: pointing the copy sink to the Bronze sales lakehouse table"
   },
   {
-    url: "/projects/NorthMeridian/26.jpg",
-    description: "Data cleaning notebook initializing PySpark functions and creating DataFrames from bronze lakehouse tables and CSV region maps."
+    src: "/projects/NorthMeridian/26.jpg",
+    alt: "Data cleaning notebook initializing PySpark functions and creating DataFrames from bronze lakehouse tables and CSV region maps",
+    caption: "Notebook initialization: loading PySpark functions and establishing base DataFrames from bronze and CSV sources"
   },
   {
-    url: "/projects/NorthMeridian/27.jpg",
-    description: "Executing customer data transformations, joining customer data with region mapping tables, and selecting formatted columns."
+    src: "/projects/NorthMeridian/27.jpg",
+    alt: "Executing customer data transformations, joining customer data with region mapping tables, and selecting formatted columns",
+    caption: "Customer transformation: cleaning customer records and performing left joins with region mapping data"
   },
   {
-    url: "/projects/NorthMeridian/28.jpg",
-    description: "Displaying transformed customer data preview and persisting the cleaned DataFrame into the silver layer table (`silver_customer`)."
+    src: "/projects/NorthMeridian/28.jpg",
+    alt: "Displaying transformed customer data preview and persisting the cleaned DataFrame into the silver layer table silver_customer",
+    caption: "Silver persistence: previewing transformed customer records and writing them to the silver layer"
   },
   {
-    url: "/projects/NorthMeridian/29.jpg",
-    description: "Displaying product data preview with cleaned categories and unit prices in the Spark notebook."
+    src: "/projects/NorthMeridian/29.jpg",
+    alt: "Displaying product data preview with cleaned categories and unit prices in the Spark notebook",
+    caption: "Product transformation: reviewing cleaned product categories and casted decimal unit prices"
   },
   {
-    url: "/projects/NorthMeridian/30.jpg",
-    description: "Joining sales and orders DataFrames, calculating total sales amounts with rounded multiplications, and writing cleaned data to silver tables."
+    src: "/projects/NorthMeridian/30.jpg",
+    alt: "Joining sales and orders DataFrames, calculating total sales amounts with rounded multiplications, and writing cleaned data to silver tables",
+    caption: "Sales transformation: joining datasets, calculating total amounts, and persisting silver sales data"
   },
   {
-    url: "/projects/NorthMeridian/31.jpg",
-    description: "Executing silver sales transformation notebook and saving the final processed DataFrame to `NorthMeridian.Silver_sales`."
+    src: "/projects/NorthMeridian/31.jpg",
+    alt: "Executing silver sales transformation notebook and saving the final processed DataFrame to NorthMeridian.Silver_sales",
+    caption: "Silver table save: finalizing the execution block to store processed sales data into silver storage"
   },
   {
-    url: "/projects/NorthMeridian/32.jpg",
-    description: "Configuring the Master Pipeline (`Master_pipeline`) invocation activity for customer and product load (`PL_Cust_Products_load`)."
+    src: "/projects/NorthMeridian/32.jpg",
+    alt: "Configuring the Master Pipeline Master_pipeline invocation activity for customer and product load PL_Cust_Products_load",
+    caption: "Master pipeline step: orchestrating the customer and product loading pipeline activity"
   },
   {
-    url: "/projects/NorthMeridian/33.jpg",
-    description: "Configuring the master pipeline invocation activity for sales and orders incremental load (`PL_Orders_Sales_Incr_load`)."
+    src: "/projects/NorthMeridian/33.jpg",
+    alt: "Configuring the master pipeline invocation activity for sales and orders incremental load PL_Orders_Sales_Incr_load",
+    caption: "Incremental orchestration: embedding the sales and orders incremental pipeline into the master workflow"
   },
   {
-    url: "/projects/NorthMeridian/34.jpg",
-    description: "Setting up the data cleaning notebook step (`Clean_data`) sequentially within the master orchestration pipeline."
+    src: "/projects/NorthMeridian/34.jpg",
+    alt: "Setting up the data cleaning notebook step Clean_data sequentially within the master orchestration pipeline",
+    caption: "Cleaning notebook task: scheduling the data cleaning notebook execution after ingestion stages"
   },
   {
-    url: "/projects/NorthMeridian/35.jpg",
-    description: "Configuring the Silver-to-Gold transformation notebook step (`Silver_to_Gold`) in the master data engineering pipeline."
+    src: "/projects/NorthMeridian/35.jpg",
+    alt: "Configuring the Silver-to-Gold transformation notebook step Silver_to_Gold in the master data engineering pipeline",
+    caption: "Gold transformation task: adding the silver-to-gold modeling notebook to the master pipeline"
   },
   {
-    url: "/projects/NorthMeridian/36.jpg",
-    description: "Adding and configuring the Semantic Model Refresh activity at the end of the master pipeline workflow."
+    src: "/projects/NorthMeridian/36.jpg",
+    alt: "Adding and configuring the Semantic Model Refresh activity at the end of the master pipeline workflow",
+    caption: "Semantic model refresh: triggering automatic semantic model updates upon master pipeline completion"
   },
   {
-    url: "/projects/NorthMeridian/37.jpg",
-    description: "Power BI reporting dashboard visualizing sales amounts by region, category, and dimensions using the star schema data model."
-  },
-
+    src: "/projects/NorthMeridian/37.jpg",
+    alt: "Power BI reporting dashboard visualizing sales amounts by region, category, and dimensions using the star schema data model",
+    caption: "Power BI reporting: visualizing core business metrics and sales aggregations via star schema models"
+  }
     ],
     results: [
       "Full Medallion pipeline built end to end: Bronze batch loads (8 ControlTable slices), incremental daily load, Silver cleanse and join, Gold star schema and Power BI Semantic Model refresh, all chained in a single Master Pipeline.",
