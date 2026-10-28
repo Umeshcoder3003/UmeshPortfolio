@@ -731,7 +731,7 @@ END`,
       "Scheduled Master_pipeline with a daily trigger at 06:00 to meet the 08:00 reporting SLA.",
     ],
     screenshots: [
-      screenshots: [
+     
   {
     url: "/projects/NorthMeridian/1.jpg",
     description: "Configuring the Azure SQL Database source connection for loading customer data in a Microsoft Fabric data pipeline."
