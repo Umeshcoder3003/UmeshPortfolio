@@ -925,6 +925,267 @@ END`,
       "Master Pipeline scheduled at 06:00 daily, delivering yesterday's sales to the Power BI report before the 08:00 reporting window.",
     ],
   },
+    {
+    slug: "telco-customer-data-standardisation-dataflow",
+    title: "TelcoPrime: Customer Data Trust Transformation with Dataflow Gen2",
+    status: "in-progress",
+    featured: true,
+    summary:
+      "A low-code Microsoft Fabric Dataflow Gen2 that turns a raw customer CSV into a clean customer_silver table in the Lakehouse. Lookup files standardise states and street suffixes, addresses are split into street and unit, phone numbers are reduced to ten digits or null, and a quality flag marks which records pass every check. Based on bootcamp case study 10.",
+    businessProblem:
+      "TelcoPrime was building a Customer 360 view from customer records that had never been validated. Marketing mail came back undelivered and the churn model trained on location features it could not trust. In the bootcamp data profile, street suffixes had 11 spellings, states had 13 spellings, and about 11% of phone numbers (285 of 2,500) were unusable.",
+    objective:
+      "Build a repeatable, readable cleanse for 2,500 customer records: standardised street addresses with the unit split out, two-letter state codes, ten-digit phone numbers or null, and a data quality flag, written to one Lakehouse table that every team can read.",
+    dataset: {
+      source:
+        "customer_bronze.csv plus two lookup files (state_lookup.csv and address_suffix_lookup.csv) in the Lakehouse folder Files/CS_10.",
+      structure:
+        "2,500 customer records (CustomerID 1001 to 3500) with Address, State and Phone, plus two lookups: Raw_State to Standard_State and Raw_Suffix to Standard_Suffix.",
+      fields: ["CustomerID", "Address", "State", "Phone"],
+    },
+    technologies: [
+      "Microsoft Fabric",
+      "Dataflow Gen2",
+      "Power Query (M)",
+      "Lakehouse",
+      "CSV",
+    ],
+    architecture: [
+      { label: "customer_bronze.csv", icon: "file", layer: "bronze", detail: "Files/CS_10" },
+      { label: "Lookup Merges", icon: "quality", detail: "State + suffix" },
+      { label: "Parse Address", icon: "transform", detail: "Street, suffix, unit" },
+      { label: "Phone + Quality Flag", icon: "validation", detail: "10 digits or null" },
+      { label: "customer_silver", icon: "silver", layer: "silver", detail: "Lakehouse table" },
+    ],
+    concepts: [
+      "Low-code transformation with Dataflow Gen2 (Power Query)",
+      "Standardisation through reference lookups instead of hardcoded replacements",
+      "Unknown values survive: a conditional column keeps the original suffix when the lookup has no match",
+      "Rule-based data quality flag (1 or 0)",
+      "Writing to an existing Lakehouse table with the Replace update method",
+    ],
+    dataQualityTechniques: [
+      "State standardisation by lookup",
+      "Suffix standardisation by lookup",
+      "Phone reduced to ten digits or null",
+      "Quality flag (1 or 0)",
+      "Merge match counts",
+    ],
+    implementation: [
+      "Placed customer_bronze.csv and the two lookup CSVs in the Lakehouse folder CS_10.",
+      "Created a Dataflow Gen2 named TelCo, imported each CSV as its own query, set column types and promoted the first row to headers on both lookups.",
+      "Merged the customer query with the state lookup (all 2,500 rows matched), expanded only Standard_State, removed the original State column and renamed Standard_State to State.",
+      "Split Address on the right-most comma to separate the unit (for example Apt 4B) from the street.",
+      "Split the street on the right-most space so the last word (the suffix) sits in its own column.",
+      "Merged the suffix column with the suffix lookup (2,332 of 2,500 rows matched) and expanded Standard_Suffix.",
+      "Added a conditional column: if the standard suffix is null, keep the original suffix; otherwise use the standard one.",
+      "Merged the street body and the final suffix with a space into Address_Street, removed the helper columns and reordered the columns.",
+      "Added a custom column that keeps only the digits of Phone and returns them if exactly ten remain, otherwise null; removed the original Phone and renamed the result to Phone_Clean.",
+      "Added Data_quality_flag, which returns 1 only when customer ID, street, state and a ten-digit phone all pass, otherwise 0.",
+      "Set the data destination to the existing table customer_silver in the Telco schema of the Lakehouse with the Replace update method and mapped the columns.",
+      "Ran Save & run, checked the refresh history and opened the table in the Lakehouse.",
+    ],
+    screenshots: [
+      {
+        src: "/projects/Telco/1.png",
+        alt: "Lakehouse folder CS_10 containing address_suffix_lookup.csv, customer_bronze.csv and state_lookup.csv",
+        caption: "Source files: the customer CSV and two lookup CSVs sit in the Lakehouse folder CS_10",
+      },
+      {
+        src: "/projects/Telco/2.png",
+        alt: "Power Query showing the address suffix lookup after the Imported CSV step, with the header still in row 1",
+        caption: "Import: the address suffix lookup is read as a CSV with a comma delimiter and two columns",
+      },
+      {
+        src: "/projects/Telco/3.png",
+        alt: "Power Query Changed column type step on the address suffix lookup, both columns set to text",
+        caption: "Types: both lookup columns are set to text",
+      },
+      {
+        src: "/projects/Telco/4.png",
+        alt: "Address suffix lookup after promoting headers, showing Raw_Suffix and Standard_Suffix columns",
+        caption: "Headers promoted: Raw_Suffix maps variants like Street, St. and Str. to the standard St",
+      },
+      {
+        src: "/projects/Telco/5.png",
+        alt: "Use first row as headers dialog on the state lookup, with variants such as CA, ca, Calif. and California",
+        caption: "State lookup: first row promoted to headers; Raw_State holds variants such as ca, Calif. and California, all mapped to CA",
+      },
+      {
+        src: "/projects/Telco/6.png",
+        alt: "Merge dialog joining customer_silver to state_lookup csv, matching 2,500 of 2,500 rows",
+        caption: "State merge: customer_silver is merged with the state lookup, and the preview matches all 2,500 rows",
+      },
+      {
+        src: "/projects/Telco/7.png",
+        alt: "Expand dialog with only Standard_State selected from the merged state lookup",
+        caption: "Expand: only Standard_State is brought in from the lookup, and Raw_State is left out",
+      },
+      {
+        src: "/projects/Telco/8.png",
+        alt: "Customer table after removing the original State column, leaving CustomerID, Address, Phone and Standard_State",
+        caption: "Clean-up: the original State column is removed, leaving the standardised value",
+      },
+      {
+        src: "/projects/Telco/9.png",
+        alt: "Customer table after renaming Standard_State to State, with a Phone column showing 98 percent valid and 2 percent empty",
+        caption: "Rename: Standard_State becomes State; profiling shows Phone is 98% valid and 2% empty before cleaning",
+      },
+      {
+        src: "/projects/Telco/10.png",
+        alt: "Split column dialog set to a comma separator, right-most delimiter, split into columns",
+        caption: "Unit split: the address is split on the right-most comma so a trailing unit such as Apt 4B gets its own column",
+      },
+      {
+        src: "/projects/Telco/11.png",
+        alt: "Split column dialog using a space separator at the right-most delimiter, splitting into columns",
+        caption: "Suffix split: the street is split on the right-most space so the last word (the suffix) sits in its own column",
+      },
+      {
+        src: "/projects/Telco/12.png",
+        alt: "Merge dialog joining the suffix column to address_suffix_lookup csv, matching 2,332 of 2,500 rows",
+        caption: "Suffix merge: the suffix column is merged with the suffix lookup, and the preview matches 2,332 of 2,500 rows",
+      },
+      {
+        src: "/projects/Telco/13.png",
+        alt: "Add conditional column dialog: if Standard_Suffix equals null then keep Address.4, else use Standard_Suffix",
+        caption: "Unknown suffixes survive: when the lookup has no match, the original suffix is kept instead of dropped",
+      },
+      {
+        src: "/projects/Telco/14.png",
+        alt: "Merge columns dialog with a space separator and the new column name Address_Street",
+        caption: "Rebuild street: the street body and the standardised suffix are merged with a space into Address_Street",
+      },
+      {
+        src: "/projects/Telco/15.png",
+        alt: "Custom column Clean_phone using Text.Select to keep digits and returning them only if the length is ten",
+        caption: "Phone cleaning: only the digits are kept, and the value is returned only if exactly ten digits remain, otherwise null",
+      },
+      {
+        src: "/projects/Telco/16.png",
+        alt: "Custom column Data_quality_flag formula checking customer ID, street, phone and state are not null or blank",
+        caption: "Quality flag: a custom column checks the customer ID, street, ten-digit phone and state (first half of the formula)",
+      },
+      {
+        src: "/projects/Telco/17.png",
+        alt: "End of the Data_quality_flag formula returning 1 when all checks pass, otherwise 0",
+        caption: "Quality flag, continued: records that pass every check get 1, all others get 0",
+      },
+      {
+        src: "/projects/Telco/18.png",
+        alt: "Dataflow table with Address_Street, Address_unit, State, Phone_Clean and Data_quality_flag; rows with a null phone have a flag of 0",
+        caption: "Result in the dataflow: clean street, unit, state and phone columns; records with a null phone carry a flag of 0",
+      },
+      {
+        src: "/projects/Telco/19.png",
+        alt: "Data destination dialog choosing the existing table customer_silver in the Telco schema",
+        caption: "Destination: the output is written to the existing table customer_silver in the Telco schema of the Lakehouse",
+      },
+      {
+        src: "/projects/Telco/20.png",
+        alt: "Destination settings with the Replace update method and a column mapping from source to destination",
+        caption: "Destination settings: Replace update method, with CustomerID mapped as a whole number and the other columns as text",
+      },
+      {
+        src: "/projects/Telco/21.png",
+        alt: "Save and run menu in the dataflow editor",
+        caption: "Run: Save & run saves the dataflow and refreshes it",
+      },
+      {
+        src: "/projects/Telco/22.png",
+        alt: "Recent runs list showing on-demand refreshes with four succeeded and one failed",
+        caption: "Run history: on-demand refreshes of 30 to 38 seconds succeeded, with one earlier run that failed after 9 seconds",
+      },
+      {
+        src: "/projects/Telco/23.png",
+        alt: "Lakehouse table view of customer_silver with six columns including Phone_Clean and Data_quality_flag",
+        caption: "Output: customer_silver in the Lakehouse with six columns, ready for downstream use",
+      },
+    ],
+    transformations: [
+      {
+        title: "Standardise state values with a lookup merge",
+        description:
+          "The customer State column held many spellings of the same state. After merging with the state lookup, only Standard_State is expanded, the original State column is dropped and Standard_State takes its name.",
+        language: "m",
+        code: `#"Removed columns" = Table.RemoveColumns(#"Expanded state_lookup csv", {"State"}),
+#"Renamed columns" = Table.RenameColumns(#"Removed columns", {{"Standard_State", "State"}})`,
+      },
+      {
+        title: "Keep unknown suffixes instead of dropping them",
+        description:
+          "After the suffix lookup merge, 2,332 of 2,500 rows found a standard suffix. For the rest, the conditional column keeps the original last word, so no address loses text.",
+        language: "m",
+        code: `if [Standard_Suffix] = null then [Address.4] else [Standard_Suffix]`,
+      },
+      {
+        title: "Clean the phone number to ten digits or null",
+        description:
+          "All non-digit characters are removed. A result of exactly ten digits is kept; anything else (blanks, text such as bad_data, wrong lengths) becomes null.",
+        language: "m",
+        code: `let
+    digits = Text.Select(Text.From([Phone]), {"0".."9"})
+in
+    if Text.Length(digits) = 10 then digits else null`,
+      },
+      {
+        title: "Flag records that pass every quality check",
+        description:
+          "Data_quality_flag is 1 only when the customer ID, street, phone and state are all present and the phone is exactly ten digits; otherwise it is 0, so downstream users can filter on it.",
+        language: "m",
+        code: `if
+    [CustomerID] <> null
+    and [Address_Street] <> null
+    and Text.Trim([Address_Street]) <> ""
+    and [Phone_Clean] <> null
+    and Text.Length([Phone_Clean]) = 10
+    and Text.Select([Phone_Clean], {"0".."9"}) = [Phone_Clean]
+    and [State] <> null
+    and Text.Trim([State]) <> ""
+then 1
+else 0`,
+      },
+    ],
+    dataQuality: {
+      nullHandling:
+        "A phone number that does not reduce to exactly ten digits becomes null. A null or blank customer ID, street, phone or state sets the quality flag to 0.",
+      invalidRecords:
+        "Placeholder text such as bad_data has no digits, so its Phone_Clean is null and its flag is 0. Records are flagged, not removed.",
+      schemaValidation:
+        "Destination column mapping sets CustomerID as a whole number and the other columns as text.",
+      dataValidation:
+        "The state merge matched 2,500 of 2,500 rows and the suffix merge matched 2,332 of 2,500. Profiling reports valid, error and empty percentages for each column.",
+    },
+    challenges: [
+      {
+        challenge:
+          "Street suffixes were written many ways (Street, St., Str and so on), and some addresses had no suffix the lookup knew.",
+        solution:
+          "Split the last word into its own column, standardised it through the suffix lookup, and used a conditional column to keep the original word when there was no match, so nothing was dropped.",
+      },
+      {
+        challenge:
+          "Units such as Apt 4B were stored inside the address text after a comma.",
+        solution:
+          "Split the address on the right-most comma first, so the unit gets its own column and the street can then be split on the last space.",
+      },
+    ],
+    learnings: [
+      "Standardising messy categorical values with lookup tables instead of hardcoded replacements",
+      "Splitting text on the right-most delimiter to separate a trailing detail",
+      "Preserving unmatched values with a conditional column so no data is lost",
+      "Building a quality flag that downstream consumers can filter on",
+      "Choosing low-code (Dataflow Gen2) when the team needs a cleanse it can read and maintain",
+    ],
+    results: [
+      "State merge matched all 2,500 customer rows to a standard state.",
+      "Suffix merge matched 2,332 of 2,500 rows; the 168 unmatched rows equal the number of military and PSC addresses the brief says have no suffix, and their original suffix is kept.",
+      "In the profiling sample (top 1,000 rows), Phone_Clean is 90% valid and 10% empty, and Address_unit is 22% filled.",
+      "The customer_silver table was written to the Telco schema of the Lakehouse with six columns, and four on-demand refreshes completed successfully in 30 to 38 seconds.",
+    ],
+    // TODO: add the daily schedule, the SQL validation script and the unmatched-address report, then set status to "complete".
+    // github: "https://github.com/your-username/your-repo",
+  },
 ];
 
 export const getProject = (slug: string) => projects.find((p) => p.slug === slug);
