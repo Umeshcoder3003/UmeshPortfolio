@@ -1186,6 +1186,111 @@ else 0`,
     // TODO: add the daily schedule, the SQL validation script and the unmatched-address report, then set status to "complete".
     // github: "https://github.com/your-username/your-repo",
   },
+  
+  {
+    slug: "the-accountability-gap",
+    title: "The Accountability Gap: Regulatory Attribution Chain in Microsoft Fabric",
+    status: "in-progress",
+    featured: true,
+    summary:
+      "A Microsoft Fabric case study in defensive T-SQL, hierarchy resolution, and SCD Type 2 history in a Fabric Warehouse for a $42B asset manager rebuilding its regulatory attribution chain across three jurisdictions.",
+    businessProblem:
+      "Three regulators (FCA, SEC, MAS) required Veritas Global to name the Relationship Manager responsible for every flagged position at the moment it was opened. Roster updates overwrote records in place, destroying historical accountability and exposing the firm to $2M–$5M per audit cycle.",
+    objective:
+      "Design and deliver a robust T-SQL architecture in a Microsoft Fabric Warehouse (Warehouse_Veritas) consisting of a governed clean view, a title-partitioned leaderboard, a 5-level hierarchy flattener without recursion, and an atomic SCD Type 2 MERGE to permanently close the accountability gap.",
+    dataset: {
+      source: "Legacy execution system exports (stg.Flagged_Positions.csv, Latin-1 encoded, dirty notionals and dates) and RM roster (ref.Relationship_Managers.csv), plus incoming roster changes (stg.New_RM_Roster).",
+      structure: "stg.Flagged_Positions (PositionID, RMID, Asset_Class, Currency, Flag_Type, Status, Regulatory_Signoff, Settlement_Date, Flag_Date, Notional_Value) and ref.Relationship_Managers (RMID, Name, Title, ManagerID, Jurisdiction, Desk).",
+    },
+    technologies: [
+      "Microsoft Fabric",
+      "Fabric Warehouse",
+      "T-SQL",
+      "Delta Lake",
+      "Data Pipeline",
+    ],
+    architecture: [
+      { label: "Staging (CSV Export)", icon: "file" },
+      { label: "Fabric Pipeline Ingestion", icon: "ingestion" },
+      { label: "gold.Clean_Positions", icon: "quality", layer: "gold", detail: "Defensive T-SQL" },
+      { label: "RM Leaderboard", icon: "transform", detail: "DENSE_RANK by Title" },
+      { label: "Hierarchy Flattener", icon: "transform", detail: "5-level chain" },
+      { label: "SCD Type 2 MERGE", icon: "curated", layer: "silver", detail: "History tracking" },
+    ],
+    concepts: [
+      "Defensive casting with TRY_CONVERT and TRY_CAST to prevent batch failure on dirty source data",
+      "Null-safe outer joins ensuring positions with missing RMs remain visible with explicit unassigned labels",
+      "Exposure categorization mapping notional values into five risk bands (Low to Critical)",
+      "Title-partitioned DENSE_RANK leaderboard for fair peer comparison of resolution performance",
+      "Non-recursive 5-level self-referencing hierarchy flattening using left outer joins and CONCAT_WS",
+      "Atomic SCD Type 2 MERGE handling title, manager, and jurisdiction changes while preserving history",
+    ],
+    dataQualityTechniques: [
+      "TRY_CONVERT and TRY_CAST used across all numeric and date fields, returning sentinel values (1900-01-01 / NULL) instead of raising errors on malformed source strings.",
+      "ISNULL handling for unassigned RMs so no position drops out of regulatory visibility.",
+      "Deduplication of incoming roster state prior to hierarchy joins to prevent row multiplication.",
+      "Transaction-wrapped SCD Type 2 updates closing prior records and inserting new active versions atomically.",
+    ],
+    implementation: [
+      "Loaded legacy staging CSVs (Latin-1 encoded for £ symbols) and RM reference data into Warehouse_Veritas via Fabric data pipelines.",
+      "Created gold.Clean_Positions view featuring defensive casting, exposure categorization, and null-safe RM left joins.",
+      "Built RM leaderboard ranking resolutions with DENSE_RANK partitioned by Title for qualified sign-offs.",
+      "Implemented non-recursive 5-level hierarchy flattener resolving reporting lines from Analyst to Managing Partner without gaps.",
+      "Added SCD Type 2 history tracking columns (start_date, End_date, Active) and authored an atomic transaction MERGE processing incoming roster updates from stg.New_RM_Roster.",
+    ],
+    screenshots: [
+      {
+        src: "/projects/the-accountability-gap/1.jpg",
+        alt: "Fabric Pipeline copy data activity source settings for VeritasGlobal staging files",
+        caption: "Pipeline ingestion: copying legacy flagged positions and RM roster into Warehouse_Veritas staging",
+      },
+      {
+        src: "/projects/the-accountability-gap/2.jpg",
+        alt: "Copy data destination settings for ref_Relationship_Managers table",
+        caption: "Reference load: landing relationship manager master data into the reference schema",
+      },
+      {
+        src: "/projects/the-accountability-gap/5.jpg",
+        alt: "T-SQL query creating gold.Clean_Positions view with TRY_CAST, TRY_CONVERT, and CASE exposure logic",
+        caption: "Deliverable 1: governed gold.Clean_Positions view absorbing dirty source data safely",
+      },
+      {
+        src: "/projects/the-accountability-gap/6.jpg",
+        alt: "Hierarchy flattener T-SQL query using left joins and CONCAT_WS for 5-level reporting chain",
+        caption: "Deliverable 3: non-recursive hierarchy flattener resolving the complete 5-level accountability chain",
+      },
+      {
+        src: "/projects/the-accountability-gap/7.jpg",
+        alt: "Hierarchy query execution results showing RMID, Name, Title, Hierarchy depth and chain string",
+        caption: "Hierarchy execution: successful resolution of reporting lines from Analyst up to Managing Partner",
+      },
+      {
+        src: "/projects/the-accountability-gap/8.jpg",
+        alt: "Table creation script for stg.New_RM_Roster and ALTER TABLE adding SCD Type 2 columns",
+        caption: "Deliverable 4 setup: creating incoming roster staging and adding history tracking columns to reference table",
+      },
+      {
+        src: "/projects/the-accountability-gap/9.jpg",
+        alt: "SCD Type 2 transaction script updating active records and closing prior states",
+        caption: "Deliverable 4 transaction: atomic update closing expired roster states prior to new version insertion",
+      },
+      {
+        src: "/projects/the-accountability-gap/10.jpg",
+        alt: "SCD Type 2 MERGE script committing transaction and inserting new active RM records",
+        caption: "Deliverable 4 commit: inserting new active records without overwriting historical states",
+      },
+      {
+        src: "/projects/the-accountability-gap/11.jpg",
+        alt: "Leaderboard query using DENSE_RANK partitioned by Title for resolution performance",
+        caption: "Deliverable 2: RM leaderboard ranking resolution performance partitioned by professional title",
+      },
+    ],
+    results: [
+      "Permanently closed the regulatory accountability gap with fully auditable point-in-time attribution from go-live onward.",
+      "Eliminated pipeline crashes caused by dirty source data through robust defensive casting and sentinel handling.",
+      "Automated multi-level hierarchy resolution and SCD Type 2 history tracking in Fabric Warehouse.",
+    ],
+  },
 ];
 
 export const getProject = (slug: string) => projects.find((p) => p.slug === slug);
