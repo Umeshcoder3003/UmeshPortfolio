@@ -886,6 +886,81 @@ END`,
     alt: "Executing silver sales transformation notebook and saving the final processed DataFrame to NorthMeridian.Silver_sales",
     caption: "Silver table save: finalizing the execution block to store processed sales data into silver storage"
   },
+     {
+        src: "/projects/NorthMeridian/Screenshot (170).png",
+        alt: "Silver_to_Gold PySpark notebook cell importing pyspark.sql.functions and reading Silver tables into DataFrames with display outputs",
+        caption: "Silver-to-Gold Notebook Setup: reading Silver_customer, Silver_Products, and Silver_Sales tables into PySpark DataFrames",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (171).png",
+        alt: "PySpark notebook command execution showing successful read of customer_df, Products_df, and Sales_df",
+        caption: "DataFrame Inspection: successful execution of table reads from Lakehouse Delta storage",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (172).png",
+        alt: "Silver_customer DataFrame display output showing customer attributes",
+        caption: "Silver Customer Preview: inspecting raw customer records prior to dimension key assignment",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (173).png",
+        alt: "Silver_customer table view in Lakehouse displaying customer_id, FullName, Email, City, and RegionName",
+        caption: "Silver Customer Table View: verified customer data with denormalized region context",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (174).png",
+        alt: "Silver Products table view displaying ProductID, ProductName, Category, and UnitPrice with unrounded floating-point decimals",
+        caption: "Silver Products Inspection: inspecting unrounded UnitPrice values before Gold transformation",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (175).png",
+        alt: "Silver Sales table view showing transactional columns including ProductID, SalesID, CustomerID, Quantity, SalesDate, OrderID, Status, and ShipDate",
+        caption: "Silver Sales Table View: transactional event log ready for star schema aggregation",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (176).png",
+        alt: "PySpark code generating Dim_Customers with monotonically_increasing_id surrogate keys and table preview",
+        caption: "Dim_Customers Generation: assigning surrogate CustomerKey via monotonically_increasing_id() while retaining natural CustomerID and RegionName",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (177).png",
+        alt: "PySpark code generating Dim_Products with surrogate keys and UnitPrice rounding to 2 decimal places",
+        caption: "Dim_Products Generation: assigning ProductKey surrogates and rounding UnitPrice to 2 decimals to prevent floating-point accumulation",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (178).png",
+        alt: "Dim_Products table view showing ProductKey, ProductID, ProductName, Category, and UnitPrice",
+        caption: "Dim_Products Table View: 200 product records populated with surrogate keys and cleaned attributes",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (179).png",
+        alt: "Dim_Products write command execution confirming successful save to NorthMeridianGold.Dim_Products table",
+        caption: "Dim_Products Write: saving Dim_Products Delta table to the Gold layer in 5 seconds",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (180).png",
+        alt: "PySpark code generating Dim_Date continuous date spine using sequence and explode functions",
+        caption: "Dim_Date Spine Generation: building continuous calendar dates from minimum to maximum sales date",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (181).png",
+        alt: "Dim_Date table generation code formatting DateKey as yyyyMMdd integer with Year and Quarter attributes",
+        caption: "Dim_Date Attributes: formatting DateKey as integer yyyyMMdd and extracting Year and Quarter for time intelligence",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (182).png",
+        alt: "PySpark code aggregating Fact_Sales by joining Silver sales with dimensions and grouping by DateKey, CustomerKey, ProductKey, and Status",
+        caption: "Fact_Sales Aggregation: joining Silver sales with all three dimensions and computing TotalSalesAmount, OrderCount, and TotalQuantity",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (183).png",
+        alt: "Fact_Sales table view and execution output showing aggregated measures and foreign keys",
+        caption: "Fact_Sales Table View: successfully aggregated fact table saved to NorthMeridianGold.fact_sales",
+      },
+      {
+        src: "/projects/NorthMeridian/Screenshot (184).png",
+        alt: "Fabric OneLake explorer displaying NorthMeridian Gold star schema tables (dim_customers, dim_date, fact_sales)",
+        caption: "Gold Star Schema Complete: OneLake explorer displaying fully populated dimensional model ready for Power BI Direct Lake",
+      },
   {
     src: "/projects/NorthMeridian/32.png",
     alt: "Configuring the Master Pipeline Master_pipeline invocation activity for customer and product load PL_Cust_Products_load",
