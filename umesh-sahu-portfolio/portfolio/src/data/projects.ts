@@ -1366,6 +1366,381 @@ else 0`,
       "Automated multi-level hierarchy resolution and SCD Type 2 history tracking in Fabric Warehouse.",
     ],
   },
+    {
+    slug: "global-corp-spark-query-plans",
+    title: "Global Corp: Reading Spark Query Plans for an Accounts Receivable Report",
+    status: "in-progress",
+    featured: true,
+    summary:
+      "A Microsoft Fabric notebook study of what Spark does beneath a line of PySpark. Using an accounts receivable transactions CSV and a customer master Delta table, it reads Catalyst physical plans from the bottom up, compares broadcast and sort-merge joins, checks filter pushdown and partition pruning, and captures the plan of the morning report before tuning it. Based on bootcamp case study 05.",
+    businessProblem:
+      "In the bootcamp scenario, a finance division runs a daily accounts receivable report that joins about 10 million transactions to a 5,000-row customer master and sums the amounts per customer. The report works, but before quarter-end volume doubles an engineer wants to know how Spark reads the CSV, whether it moves ten million rows across the network, and what could make it read and shuffle less.",
+    objective:
+      "Learn to read Spark physical plans with explain(), compare how Spark joins a large and a small table, test pushdown and partition pruning, and capture the plan of the morning report as the starting point for tuning.",
+    dataset: {
+      source:
+        "AR_Transactions.csv in the Lakehouse folder Files/CS_5, and the Delta table GlobalCorp.customer_master in the LH_Umeshsahu Lakehouse (about 10 million and 5,000 rows according to the case study brief).",
+      structure:
+        "Transactions: TransactionID, CustomerID, Transaction_Date, TransactionAmount. Customer master: CustomerID (integer), CustomerName, Address, Credit_Limit (double).",
+      fields: [
+        "TransactionID",
+        "CustomerID",
+        "Transaction_Date",
+        "TransactionAmount",
+        "CustomerName",
+        "Credit_Limit",
+      ],
+    },
+    technologies: [
+      "Microsoft Fabric",
+      "Fabric Notebook",
+      "PySpark",
+      "Apache Spark",
+      "Delta Lake",
+      "Lakehouse",
+      "CSV",
+      "Parquet",
+    ],
+    architecture: [
+      { label: "CSV + Delta Sources", icon: "source", detail: "AR_Transactions, customer_master" },
+      { label: "PySpark Notebook", icon: "transform", detail: "Read and transform" },
+      { label: "Catalyst Plan", icon: "validation", detail: "explain(formatted)" },
+      { label: "Join Strategy", icon: "spark", detail: "Broadcast vs sort-merge" },
+      { label: "Partitioned Delta", icon: "storage", detail: "Txntest by txn_year" },
+      { label: "Customer Totals", icon: "analytics", detail: "Morning report plan" },
+    ],
+    concepts: [
+      "Reading physical plans bottom-up with explain(mode='formatted')",
+      "Predicate pushdown and column pruning on scans",
+      "Partition pruning on a Delta table partitioned by year",
+      "Broadcast hash join versus sort-merge join",
+      "Shuffles shown as Exchange nodes",
+      "Adaptive Query Execution (the plan shows isFinalPlan=false before the query runs)",
+    ],
+    dataQualityTechniques: [
+      "printSchema on both sources to confirm column types",
+      "Spotting a type mismatch from the plan: CSV columns arrive as strings, so the join key is cast to int",
+      "Inspecting every plan with explain before running the query",
+    ],
+    implementation: [
+      "Placed AR_Transactions.csv and Customer_Master.csv in the Lakehouse folder Files/CS_5, with the customer master also available as the Delta table GlobalCorp.customer_master.",
+      "In a PySpark notebook, imported pyspark.sql.functions, read the customer master with spark.read.table and the transactions with spark.read.csv (header=True), and printed both schemas.",
+      "Filtered the customer master to one customer and printed its formatted plan twice, once selecting one column and once selecting two, to see how pushdown and pruning appear in the scan.",
+      "Filtered the CSV on a cast column and printed the plan to see which filters reach the scan.",
+      "Wrote the transactions as a Delta table Txntest partitioned by txn_year, read it back with a filter on 2022 and checked the plan for partition filters.",
+      "Joined transactions to the customer master with default settings and read the join strategy in the plan.",
+      "Set spark.sql.autoBroadcastJoinThreshold to -1 and printed the plan again to compare it with the default join.",
+      "Printed the plan of the morning report (a merge-hinted left join, a date filter and a groupBy sum) as the starting point for tuning.",
+    ],
+    screenshots: [
+      {
+        src: "/projects/GlobalCorp/1.png",
+        alt: "Fabric notebook with the Lakehouse explorer showing the CS_5 folder holding AR_Transactions.csv and Customer_Master.csv, and cells reading the customer master and the transactions",
+        caption: "Setup: the notebook imports PySpark functions, reads the customer master table and reads AR_Transactions.csv from Files/CS_5",
+      },
+      {
+        src: "/projects/GlobalCorp/2.png",
+        alt: "Notebook cell reading both sources and printing the customer master schema with CustomerID, CustomerName, Address and Credit_Limit",
+        caption: "Schema: customer_master has four typed columns (CustomerID integer, CustomerName and Address strings, Credit_Limit double)",
+      },
+      {
+        src: "/projects/GlobalCorp/3.png",
+        alt: "Cell filtering the customer master to CustomerID 10001 and selecting CustomerName, with its physical plan showing Project, Filter, ColumnarToRow and Scan parquet",
+        caption: "Plan 1: filtering the customer master to one customer, with the physical plan printed by explain(mode='formatted')",
+      },
+      {
+        src: "/projects/GlobalCorp/4.png",
+        alt: "Physical plan for the one-customer query read from the bottom: Scan parquet, ColumnarToRow, Filter and Project",
+        caption: "Plan 1 read bottom-up: Scan parquet comes first, then ColumnarToRow, Filter and Project",
+      },
+      {
+        src: "/projects/GlobalCorp/5.png",
+        alt: "Scan node listing PushedFilters IsNotNull and EqualTo CustomerID 10001 and a ReadSchema of CustomerID and CustomerName, followed by the Filter and Project nodes",
+        caption: "Plan 1, scan and nodes: the equality filter appears in PushedFilters, only CustomerID and CustomerName are read, and Project keeps only CustomerName",
+      },
+      {
+        src: "/projects/GlobalCorp/6.png",
+        alt: "Cell selecting CustomerID and CustomerName after filtering, with a physical plan that has Filter, ColumnarToRow and Scan parquet but no Project node",
+        caption: "Plan 2: selecting both columns leaves no separate Project node, and the filter is still pushed to the scan",
+      },
+      {
+        src: "/projects/GlobalCorp/7.png",
+        alt: "Cell filtering the CSV on TransactionAmount cast to int equal to 70000, with a plan showing a Filter over Scan csv and PushedFilters listing only IsNotNull",
+        caption: "Plan 3: filtering a CSV column after a cast; only IsNotNull is pushed to the scan and the comparison stays in a Filter node. The CSV columns are all strings",
+      },
+      {
+        src: "/projects/GlobalCorp/8.png",
+        alt: "Cell writing the transactions as a Delta table partitioned by txn_year, and a cell reading it back with a filter on txn_year equal to 2022",
+        caption: "Partitioning: the transactions are written as the Delta table Txntest partitioned by txn_year, then read back with a filter on 2022",
+      },
+      {
+        src: "/projects/GlobalCorp/9.png",
+        alt: "Plan for the partitioned table showing PartitionFilters txn_year equals 2022 and no separate Filter node",
+        caption: "Partition pruning: the scan lists PartitionFilters txn_year = 2022, and the plan has no separate Filter node",
+      },
+      {
+        src: "/projects/GlobalCorp/10.png",
+        alt: "Cell joining transactions to the customer master with a left join and printing a plan with BroadcastHashJoin and BroadcastExchange",
+        caption: "Join 1 (default): joining without a hint gives a BroadcastHashJoin, with the customer side in a BroadcastExchange",
+      },
+      {
+        src: "/projects/GlobalCorp/11.png",
+        alt: "Plan nodes for the default join: Filter, BroadcastExchange, BroadcastHashJoin on a cast CustomerID, Project and AdaptiveSparkPlan with isFinalPlan false",
+        caption: "Join 1, node details: the customer side is broadcast, the CSV's CustomerID is cast to int for the join, and the plan is not yet final (isFinalPlan=false)",
+      },
+      {
+        src: "/projects/GlobalCorp/12.png",
+        alt: "Cell setting spark.sql.autoBroadcastJoinThreshold to -1 and printing a join plan with Exchange and Sort nodes",
+        caption: "Join 2 (broadcast off): setting spark.sql.autoBroadcastJoinThreshold to -1 changes the plan, and the transactions side now goes through an Exchange and a Sort",
+      },
+      {
+        src: "/projects/GlobalCorp/13.png",
+        alt: "Plan nodes showing Filter, Exchange hashpartitioning on CustomerID with 200 partitions, Sort and a SortMergeJoin",
+        caption: "Join 2, node details: both sides are hash-partitioned on CustomerID (200 partitions) and sorted before a SortMergeJoin",
+      },
+      {
+        src: "/projects/GlobalCorp/14.png",
+        alt: "Morning report cell and its plan tree: HashAggregate, Exchange, HashAggregate, Project, SortMergeJoin with Sort and Exchange on each side",
+        caption: "Morning report plan: a sort-merge join, then a partial HashAggregate, an Exchange and a final HashAggregate",
+      },
+      {
+        src: "/projects/GlobalCorp/15.png",
+        alt: "Report plan scan of the CSV with PushedFilters including GreaterThanOrEqual Transaction_Date 2025-01-01, followed by Filter, Project and Exchange nodes",
+        caption: "Report plan, transactions scan: the date filter is listed in the scan's PushedFilters even though it was written after the join, and only three columns are read",
+      },
+      {
+        src: "/projects/GlobalCorp/16.png",
+        alt: "Report plan nodes: Sort, Scan parquet of customer_master reading CustomerID and CustomerName, Filter and Exchange",
+        caption: "Report plan, customer side: the customer master scan reads only CustomerID and CustomerName, then is filtered and exchanged by CustomerID",
+      },
+      {
+        src: "/projects/GlobalCorp/17.png",
+        alt: "Report plan nodes: Filter, Exchange, Sort, SortMergeJoin LeftOuter on a cast CustomerID, and Project of TransactionAmount and CustomerName",
+        caption: "Report plan, join: the SortMergeJoin casts the CSV's CustomerID to int, and the Project keeps only TransactionAmount and CustomerName",
+      },
+      {
+        src: "/projects/GlobalCorp/18.png",
+        alt: "Report plan aggregation nodes: partial_sum HashAggregate, Exchange hashpartitioning on CustomerName with 200 partitions, final sum HashAggregate and AdaptiveSparkPlan with isFinalPlan false",
+        caption: "Report plan, aggregation: a partial sum per partition, an Exchange by CustomerName, then the final sum; the plan is not yet final (isFinalPlan=false)",
+      },
+    ],
+    transformations: [
+      {
+        title: "Write the transactions as a Delta table partitioned by year",
+        description:
+          "Adds a txn_year column from the transaction date and writes one folder per year, so a query that filters on txn_year can skip the other folders.",
+        language: "python",
+        code: `txn_df.withColumn("txn_year", F.year("Transaction_date")) \\
+    .write.mode("overwrite").format("delta") \\
+    .partitionBy("txn_year") \\
+    .saveAsTable("LH_Umeshsahu.GlobalCorp.Txntest")`,
+      },
+      {
+        title: "Turn off automatic broadcast to compare join strategies",
+        description:
+          "Setting the broadcast threshold to -1 stops Spark from broadcasting the small table, so the same join is planned as a sort-merge join with a shuffle on both sides.",
+        language: "python",
+        code: `spark.conf.set("spark.sql.autoBroadcastJoinThreshold", -1)
+joined_df = txn_df.join(cust_df, "Customerid", "left")
+joined_df.explain(mode="formatted")`,
+      },
+      {
+        title: "The morning report (before tuning)",
+        description:
+          "The report as it runs today: a merge-hinted left join, a date filter and a sum per customer. Its plan has three Exchange nodes: one for each side of the join and one for the group by.",
+        language: "python",
+        code: `report_df = (txn_df.join(cust_df.hint("merge"), "CustomerID", "left")
+    .filter(F.col("Transaction_Date") >= "2025-01-01")
+    .groupBy("CustomerName")
+    .agg(F.sum("TransactionAmount").alias("total_amount")))
+
+report_df.explain(mode="formatted")`,
+      },
+    ],
+    dataQuality: {
+      schemaValidation:
+        "printSchema on customer_master shows four typed columns. The CSV is read with header=True and no schema inference, so every transaction column arrives as a string and Spark casts CustomerID to int when joining.",
+    },
+    learnings: [
+      "Reading a physical plan from the bottom up and spotting scans, filters, exchanges and joins",
+      "Checking PushedFilters, ReadSchema and PartitionFilters to see what a scan actually does",
+      "Seeing how the join strategy changes the number of shuffles (Exchange nodes)",
+      "Noticing type mismatches in a plan, such as a string join key being cast to int",
+      "Understanding that the plan printed before a run (isFinalPlan=false) can be re-planned by Adaptive Query Execution",
+    ],
+    results: [
+      "Filtering the customer master to one customer shows the equality filter in PushedFilters, and only CustomerID and CustomerName are read.",
+      "Filtering the partitioned Delta table on txn_year = 2022 shows as a PartitionFilter, with no separate Filter node.",
+      "The default join is a BroadcastHashJoin; with autoBroadcastJoinThreshold set to -1 it becomes a SortMergeJoin with an Exchange and a Sort on each side.",
+      "The morning report's plan has three Exchange nodes (one for each side of the join and one for the group by), and its date filter is pushed to the CSV scan.",
+    ],
+    // TODO: add the operation classification (narrow or wide), the tuned "after" plan (broadcast join, Delta source), run timings and the answer to why the date filter appears on the scan, then set status to "complete".
+    // github: "https://github.com/your-username/your-repo",
+  },
+    {
+    slug: "velocitytrade-live-market-intelligence",
+    title: "VelocityTrade Capital: Live Market Intelligence with Real-Time Intelligence",
+    status: "in-progress",
+    featured: true,
+    summary:
+      "A Microsoft Fabric Real-Time Intelligence pipeline that replaces batch market data with streaming ticks. An Eventstream carries stock tick events through a field-mapping operator into a KQL Database table in an Eventhouse, and a KQL Queryset holds the analytical queries: latest close, intra-day range, daily return, volume surge, drawdown from peak and a data quality check. Based on bootcamp case study 11.",
+    businessProblem:
+      "In the bootcamp scenario, an algorithmic trading firm monitoring 240 symbols fed its strategies from a batch pipeline refreshed every 15 to 45 minutes. Signals ran on stale prices, no event-level audit trail existed, and price moves were noticed only by watching dashboards. The brief estimates 2.1 to 3.4 million dollars per quarter of return leakage from timing errors.",
+    objective:
+      "Ingest live tick data through an Eventstream into a KQL Database, and expose it through a governed library of KQL queries that can drive dashboards and alerts.",
+    dataset: {
+      source:
+        "Stocksdata, a sample stock market data source connected to an Eventstream, landing in the StockTicks table of a KQL Database.",
+      structure:
+        "One row per tick event with eight fields: Date, Open, High, Low, Close, AdjClose, Volume and Ticker.",
+      fields: ["Date", "Open", "High", "Low", "Close", "AdjClose", "Volume", "Ticker"],
+    },
+    technologies: [
+      "Microsoft Fabric",
+      "Real-Time Intelligence",
+      "Eventstream",
+      "Eventhouse",
+      "KQL Database",
+      "KQL",
+      "KQL Queryset",
+    ],
+    architecture: [
+      { label: "Stocksdata", icon: "source", detail: "Sample tick source" },
+      { label: "Eventstream", icon: "ingestion", detail: "EventStreamrun" },
+      { label: "ManageFields", icon: "transform", detail: "Process before ingestion" },
+      { label: "StockTicks", icon: "storage", detail: "KQL Database (Eventhouse)" },
+      { label: "KQL Queryset", icon: "analytics", detail: "Analytical queries" },
+    ],
+    concepts: [
+      "Event-driven ingestion with an Eventstream instead of batch refresh",
+      "Event processing before ingestion with a ManageFields operator",
+      "Eventhouse and KQL Database as a time-series store",
+      "KQL aggregation with summarize, arg_max and extend",
+      "A query library with a data quality query",
+    ],
+    dataQualityTechniques: [
+      "Anomaly query for zero or negative High and Low prices, negative volume and High below Low",
+      "Typed StockTicks schema (datetime, real and long fields)",
+      "Field mapping applied in the stream before events are ingested",
+    ],
+    implementation: [
+      "Created the Eventhouse EH_UmeshSahu with a KQL Database and the StockTicks table holding Date, Open, High, Low, Close, AdjClose, Volume and Ticker.",
+      "Built the Eventstream EventStreamrun with the Stocksdata sample source feeding its default stream.",
+      "Added a ManageFields operator to process events before ingestion.",
+      "Set the destination to the StockTicks table in the EH_UmeshSahu KQL Database, with JSON as the input data format.",
+      "Checked the StockTicks table: the Data Activity Tracker reported 8.6M ingested rows, with ingestion activity from 4 to 7 November.",
+      "Created the KQL Queryset EH_UmeshSahu_queryset and wrote the analytical queries against StockTicks, each in its own tab.",
+    ],
+    screenshots: [
+      {
+        src: "/projects/Velocity/1.png",
+        alt: "Eventstream canvas with the Stocksdata source, an Eventstream stream, a ManageFields operator and a StockTicks destination",
+        caption: "Pipeline: the Stocksdata source flows through the stream and a ManageFields operator into the StockTicks destination",
+      },
+      {
+        src: "/projects/Velocity/2.png",
+        alt: "Eventhouse destination settings with StockTicks as the destination name, the EH_UmeshSahu KQL Database and table, and JSON input format",
+        caption: "Destination: events are written to the StockTicks table of the EH_UmeshSahu KQL Database as JSON, after event processing",
+      },
+      {
+        src: "/projects/Velocity/3.png",
+        alt: "KQL query returning the latest Close per Ticker using summarize and arg_max",
+        caption: "Query 1: the latest closing price per ticker, using arg_max on the event time",
+      },
+      {
+        src: "/projects/Velocity/4.png",
+        alt: "KQL queries calculating the average of High minus Low per Ticker, written two ways",
+        caption: "Query 2: average intra-day range (High minus Low) per ticker, written directly and through a derived column",
+      },
+      {
+        src: "/projects/Velocity/5.png",
+        alt: "KQL query averaging Close minus Open per Ticker",
+        caption: "Query 3: average daily return, measured as Close minus Open, per ticker",
+      },
+      {
+        src: "/projects/Velocity/6.png",
+        alt: "KQL query computing a volume surge ratio of maximum volume to average volume per Ticker and filtering ratios above 1.97",
+        caption: "Query 4: volume surge detection, flagging tickers whose maximum volume exceeds average volume by more than a set ratio",
+      },
+      {
+        src: "/projects/Velocity/7.png",
+        alt: "KQL query computing each ticker's peak High, latest Close and a Drawdown percentage",
+        caption: "Query 5: drawdown, the gap between each ticker's peak High and its latest Close",
+      },
+      {
+        src: "/projects/Velocity/8.png",
+        alt: "KQL query filtering rows where High or Low is zero or negative, Volume is negative, or High is below Low",
+        caption: "Query 6: data quality check for zero or negative prices, negative volume and High below Low",
+      },
+      {
+        src: "/projects/Velocity/9.png",
+        alt: "StockTicks table overview with a Data Activity Tracker chart showing 8.6M ingested rows and the eight-column schema",
+        caption: "Ingestion check: the StockTicks table has eight columns, and its Data Activity Tracker shows 8.6M ingested rows",
+      },
+    ],
+    transformations: [
+      {
+        title: "Latest close per ticker",
+        description:
+          "Groups ticks by ticker and returns the Close from the row with the most recent Date, the current price reference for each symbol.",
+        language: "kql",
+        code: `StockTicks
+| summarize arg_max(todatetime(Date), Close) by Ticker`,
+      },
+      {
+        title: "Volume surge detection",
+        description:
+          "Compares each ticker's maximum volume with its average volume and keeps only tickers where the ratio is above a set threshold, flagging abnormal activity.",
+        language: "kql",
+        code: `StockTicks
+| summarize AvgVolume = avg(Volume),
+            MaxVolume = max(Volume) by Ticker
+| extend SurgeRatio = round(MaxVolume / AvgVolume, 2)
+| where SurgeRatio > 1.97`,
+      },
+      {
+        title: "Drawdown from peak",
+        description:
+          "Finds each ticker's peak High and latest Close, then calculates the percentage gap between them to surface instruments in possible reversal.",
+        language: "kql",
+        code: `StockTicks
+| summarize PeakHigh = max(High),
+            Latestclose = arg_max(todatetime(Date), Close) by Ticker
+| extend Drawdown = (PeakHigh - Close) / Close * 100`,
+      },
+      {
+        title: "Data quality violations",
+        description:
+          "Returns rows with impossible values: zero or negative High or Low, negative volume, or a High below the Low, so bad data can be caught before it reaches a signal.",
+        language: "kql",
+        code: `StockTicks
+| where High <= 0 or Low <= 0 or Volume < 0 or High < Low`,
+      },
+    ],
+    dataQuality: {
+      schemaValidation:
+        "StockTicks has eight typed columns (Date, Open, High, Low, Close, AdjClose, Volume, Ticker) and the Eventstream destination reads events as JSON.",
+      invalidRecords:
+        "A KQL query lists rows with zero or negative High or Low prices, negative volume or High below Low.",
+      dataValidation:
+        "The StockTicks Data Activity Tracker shows ingestion activity, with 8.6M rows ingested.",
+    },
+    learnings: [
+      "Building a streaming ingestion path with an Eventstream into a KQL Database",
+      "Applying event processing before data lands in the table",
+      "Writing KQL for latest values, ranges, ratios and anomaly checks",
+      "Keeping a data quality query in the same library as the analytical queries",
+    ],
+    results: [
+      "StockTicks holds an eight-column tick schema, and its Data Activity Tracker reported 8.6M ingested rows with activity from 4 to 7 November.",
+      "Six KQL queries are written in the queryset (latest close, intra-day range, daily return, volume surge, drawdown and a data quality check).",
+    ],
+    // TODO: add the remaining queries (pipeline freshness and derived field integrity), run results, the Real-Time Dashboard, the Activator alert and the audit log, then set status to "complete".
+    // TODO: check the drawdown formula; the brief defines it as the decline from the peak High, which would divide by PeakHigh, not Close.
+    // github: "https://github.com/your-username/your-repo",
+  },
+
+  
 ];
 
 export const getProject = (slug: string) => projects.find((p) => p.slug === slug);
