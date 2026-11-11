@@ -1739,7 +1739,106 @@ report_df.explain(mode="formatted")`,
     // TODO: check the drawdown formula; the brief defines it as the decline from the peak High, which would divide by PeakHigh, not Close.
     // github: "https://github.com/your-username/your-repo",
   },
-
+  {
+    slug: "retailcore-inventory-postgresql-gateway-ingestion",
+    title: "RetailCore Ltd: On-Demand PostgreSQL Ingestion through an On-Premises Gateway",
+    status: "in-progress",
+    featured: true,
+    summary:
+      "A Fabric pipeline that replaces a daily manual CSV export. An on-premises data gateway reaches a PostgreSQL inventory table, a Copy activity does a full extract and overwrite into a Lakehouse Delta table, and a second activity writes one audit row per run.",
+    businessProblem:
+      "An analyst exported the inventory table to CSV every day and dropped it in a shared folder. When the analyst was absent nothing moved, large files were truncated, special characters were garbled and columns were silently dropped. Nothing recorded when the data was last refreshed or how many rows moved, so merchandising could not tell whether it was looking at today's or yesterday's stock.",
+    objective:
+      "RetailCore Ltd runs twelve regional warehouses with about 80,000 active SKUs. Build a production transfer mechanism that moves the PostgreSQL inventory table into the Lakehouse as a governed Delta table, triggered by the warehouse supervisor once the day's entries are confirmed, with a timestamped audit record for every run and no file handling at any stage.",
+    dataset: {
+      source: "On-premises PostgreSQL 18 table inventory.\"InventorySnapshot\" (about 670,000 rows: 80,000 SKUs, each held in about 70 percent of 12 warehouses), reached through an on-premises data gateway installed on the source server.",
+      structure: "Six columns: sku_id, product_name, warehouse_code (WH01 to WH12), stock_on_hand, last_updated (timestamp with time zone) and unit_cost (decimal(10,2)). The primary key is (sku_id, warehouse_code). Seeded with edge cases: zero stock, a 99,999.99 unit cost, accented product names and a 255-character name.",
+    },
+    technologies: [
+      "Microsoft Fabric",
+      "Fabric Data Pipeline",
+      "On-premises Data Gateway",
+      "PostgreSQL",
+      "Lakehouse",
+      "Delta Lake",
+      "SQL",
+    ],
+    architecture: [
+      { label: "PostgreSQL (On-prem)", icon: "source" },
+      { label: "Data Gateway", icon: "ingestion", detail: "Outbound only" },
+      { label: "Copy Activity", icon: "ingestion", detail: "Full extract" },
+      { label: "InventorySnapshot", icon: "storage", layer: "silver", detail: "Delta, Overwrite" },
+      { label: "Audit Copy Activity", icon: "transform", detail: "On success" },
+      { label: "pipeline_audit_log", icon: "quality", detail: "One row per run" },
+    ],
+    concepts: [
+      "On-premises data gateway: reaches the database through outbound connections only, without exposing the server to the internet",
+      "Reusable gateway connection that other pipelines can share",
+      "Full extract with full overwrite: records are corrected several times a day, so insert timestamps are unreliable and the Lakehouse must match PostgreSQL at the moment of the trigger",
+      "Push model: the warehouse supervisor triggers the run, so readiness and transfer happen in one auditable step",
+      "Idempotent load: the Overwrite table action means repeat runs add no duplicate rows",
+      "Dynamic content: pipeline().RunId and activity('Copy data1').output.rowsCopied feed the audit query",
+      "Quoted mixed-case PostgreSQL identifiers (inventory.\"InventorySnapshot\")",
+    ],
+    dataQualityTechniques: [
+      "Primary key on (sku_id, warehouse_code) in the source, with a duplicate-pair query to confirm the Delta table holds each pair once",
+      "NOT NULL checks on the source columns, re-checked by query in the Lakehouse because Delta does not enforce keys or NOT NULL",
+      "unit_cost kept at decimal(10,2) with no rounding, and last_updated kept as a timestamp with time zone",
+      "Edge-case rows (zero stock, high unit cost, special characters, maximum-length name) used to test the pipeline against the CSV failure modes",
+      "Audit row per run with run ID, timestamp, source table, rows transferred and status, so freshness and volume are always visible",
+      "Row-count reconciliation between PostgreSQL and the Delta table, plus a second run with no source changes to prove the count is unchanged",
+    ],
+    implementation: [
+      "Created the inventory schema and the InventorySnapshot table in PostgreSQL with a composite primary key, then seeded about 670,000 rows across 12 warehouses, plus a 5 percent intra-day correction update and edge-case rows.",
+      "Installed the on-premises data gateway (Umesh-onprem-gateway) on the PostgreSQL machine and confirmed it online and ready for Microsoft Fabric.",
+      "Created a PostgreSQL connection in Fabric and used it as the source of the Copy activity, reading inventory.InventorySnapshot.",
+      "Set the Copy destination to the Lakehouse LH_Umeshsahu, schema CaseOnprem, with the Overwrite table action so every run replaces the whole table.",
+      "Added a second Copy activity (Copy data2) chained on success of the first. Its source query is built with @concat from pipeline().RunId, CURRENT_TIMESTAMP, the source table name, string(activity('Copy data1').output.rowsCopied) and a SUCCESS status.",
+      "Pointed the audit activity at pipeline_audit_log (run ID, run timestamp, source table, rows transferred, execution status).",
+      // TODO: add after the build is complete
+      // "Added a FAILURE path from the On fail connector of Copy data1 so a failed copy is also logged.",
+      // "Ran the pipeline, compared row counts, re-ran it and confirmed the count was unchanged.",
+    ],
+    screenshots: [
+      {
+        src: "/projects/retailcore-inventory/1.png",
+        alt: "pgAdmin showing the SQL that creates the inventory schema and the InventorySnapshot table with a composite primary key",
+        caption: "Source table: inventory.\"InventorySnapshot\" in PostgreSQL 18 with six columns and a primary key on (sku_id, warehouse_code)",
+      },
+      {
+        src: "/projects/retailcore-inventory/2.png",
+        alt: "On-premises data gateway status window showing Umesh-onprem-gateway online and ready, with Microsoft Fabric marked Ready",
+        caption: "Gateway: Umesh-onprem-gateway is online and ready for Microsoft Fabric, installed on the PostgreSQL machine",
+      },
+      {
+        src: "/projects/retailcore-inventory/3.png",
+        alt: "Copy data1 source settings using a PostgreSQL connection to read inventory.InventorySnapshot",
+        caption: "Copy activity source: reads inventory.InventorySnapshot through the PostgreSQL connection in Table mode",
+      },
+      {
+        src: "/projects/retailcore-inventory/4.png",
+        alt: "Copy data1 destination settings loading a Lakehouse table in the CaseOnprem schema with the Overwrite table action",
+        caption: "Copy activity destination: Lakehouse Delta table in the CaseOnprem schema with Overwrite, so each run replaces the whole table",
+      },
+      {
+        src: "/projects/retailcore-inventory/5.png",
+        alt: "Pipeline expression builder showing a concat expression that builds the audit SELECT with pipeline RunId and rowsCopied",
+        caption: "Audit query: dynamic content builds one row from pipeline().RunId, CURRENT_TIMESTAMP, the source table name and the rowsCopied output of Copy data1",
+      },
+      {
+        src: "/projects/retailcore-inventory/6.png",
+        alt: "Copy data2 destination settings pointing at the pipeline_audit_log table",
+        caption: "Audit activity destination: Copy data2 writes the audit row to pipeline_audit_log after the main copy succeeds",
+      },
+    ],
+    results: [
+      // TODO: fill in after the verification run
+      // "Row count: Lakehouse = PostgreSQL = ___",
+      // "Re-run: row count unchanged, one new audit row per run",
+      "Gateway online, source table built, and the two-activity pipeline (full-overwrite Copy, then audit Copy) wired end to end.",
+    ],
+    // github: "your-username/your-repo",
+  },
   
 ];
 
