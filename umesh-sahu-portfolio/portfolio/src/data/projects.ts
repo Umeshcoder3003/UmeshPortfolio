@@ -10,7 +10,7 @@ export const projects: Project[] = [
   {
     slug: "employee-data-quality-etl-pipeline",
     title: "Employee Data Quality & ETL Pipeline",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A pipeline that processes employee data and separates valid records from null, invalid and inconsistent ones before publishing a curated dataset.",
@@ -41,7 +41,7 @@ export const projects: Project[] = [
   {
     slug: "Granduer-Properties-ingestion-pipeline",
     title: "Granduer Properties: Landing-to-Lakehouse Ingestion Pipeline",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A Microsoft Fabric pipeline that loads property listing CSV files from a landing zone into a Lakehouse silver table, archives the processed files and clears the landing zone.",
@@ -129,7 +129,7 @@ export const projects: Project[] = [
   {
     slug: "global-freight-forwarders-logistics-data-modernization",
     title: "Global Freight Forwarders: Logistics Data Modernization",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "An automated, incremental data ingestion pipeline within the Microsoft Fabric ecosystem. The solution introduces a watermark-based state tracking mechanism that autonomously detects net-new JSON files, filters them by last-modified time, and appends them into a governed Delta table in the Bronze layer. Manual intervention is eliminated, only new records are processed on each run, and downstream reporting now stands on an auditable foundation that scales with volume rather than against it.",
@@ -382,7 +382,7 @@ export const projects: Project[] = [
     {
     slug: "crestview-finance-fx-rates-warehouse-ingestion",
     title: "Crestview Finance: Daily FX Rates from a Public API into the Fabric Warehouse",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A warehouse-native API ingestion in Microsoft Fabric. A pipeline Web Activity calls the Frankfurter API for daily ECB exchange rates, passes the JSON response to a stored procedure, and T-SQL OPENJSON shreds the nested payload into one clean row per currency in a warehouse table.",
@@ -502,7 +502,7 @@ END`,
     {
     slug: "Metropolis-inbox-dynamic-router",
     title: "City of Metropolis: Dynamic Inbox Router",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A single Microsoft Fabric pipeline that triages a shared department inbox with no manual step. It lists every file, loops over them, routes Police, Parking and 311 files to their Bronze folders by file-name pattern, quarantines anything unrecognised, archives the file and clears the inbox. Based on bootcamp case study FAB03.",
@@ -666,7 +666,7 @@ END`,
   {
     slug: "north-meridian-retail-unified-commerce-analytics",
     title: "NorthMeridian Retail Group: Unified Commerce Analytics",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A full Medallion lift for a multi-channel retail group stuck on five-way SQL joins and three copies of a region CSV. Four Azure SQL tables and a RegionMapping CSV flow through Bronze, Silver and a Gold star schema — Dim_Customers, Dim_Products, Dim_Date and a pre-aggregated Fact_Sales — orchestrated by a Master Pipeline that runs daily at 06:00 and finishes before the 08:00 reporting window.",
@@ -1003,7 +1003,7 @@ END`,
     {
     slug: "telco-customer-data-standardisation-dataflow",
     title: "TelcoPrime: Customer Data Trust Transformation with Dataflow Gen2",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A low-code Microsoft Fabric Dataflow Gen2 that turns a raw customer CSV into a clean customer_silver table in the Lakehouse. Lookup files standardise states and street suffixes, addresses are split into street and unit, phone numbers are reduced to ten digits or null, and a quality flag marks which records pass every check. Based on bootcamp case study 10.",
@@ -1265,7 +1265,7 @@ else 0`,
   {
     slug: "the-accountability-gap",
     title: "The Accountability Gap: Regulatory Attribution Chain in Microsoft Fabric",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A Microsoft Fabric case study in defensive T-SQL, hierarchy resolution, and SCD Type 2 history in a Fabric Warehouse for a $42B asset manager rebuilding its regulatory attribution chain across three jurisdictions.",
@@ -1369,7 +1369,7 @@ else 0`,
     {
     slug: "global-corp-spark-query-plans",
     title: "Global Corp: Reading Spark Query Plans for an Accounts Receivable Report",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A Microsoft Fabric notebook study of what Spark does beneath a line of PySpark. Using an accounts receivable transactions CSV and a customer master Delta table, it reads Catalyst physical plans from the bottom up, compares broadcast and sort-merge joins, checks filter pushdown and partition pruning, and captures the plan of the morning report before tuning it. Based on bootcamp case study 05.",
@@ -1580,7 +1580,7 @@ report_df.explain(mode="formatted")`,
     {
     slug: "velocitytrade-live-market-intelligence",
     title: "VelocityTrade Capital: Live Market Intelligence with Real-Time Intelligence",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A Microsoft Fabric Real-Time Intelligence pipeline that replaces batch market data with streaming ticks. An Eventstream carries stock tick events through a field-mapping operator into a KQL Database table in an Eventhouse, and a KQL Queryset holds the analytical queries: latest close, intra-day range, daily return, volume surge, drawdown from peak and a data quality check. Based on bootcamp case study 11.",
@@ -1742,7 +1742,7 @@ report_df.explain(mode="formatted")`,
   {
     slug: "RetailCore-postgresql-gateway-ingestion",
     title: "RetailCore Ltd: On-Demand PostgreSQL Ingestion through an On-Premises Gateway",
-    status: "in-progress",
+    status: "complete",
     featured: true,
     summary:
       "A Fabric pipeline that replaces a daily manual CSV export. An on-premises data gateway reaches a PostgreSQL inventory table, a Copy activity does a full extract and overwrite into a Lakehouse Delta table, and a second activity writes one audit row per run.",
