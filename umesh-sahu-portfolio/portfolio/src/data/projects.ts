@@ -109,7 +109,7 @@ export const projects: Project[] = [
         caption: "Archive activity destination: copies the files to CS_1/Archivezone as DelimitedText",
       },
       {
-        src: "/projects/Granduer-Properties/5.png",
+        src: "/projects/Granduer-Properties/5.jpg",
         alt: "Delete data activity source settings targeting all files in the Landingzone folder",
         caption: "Delete activity: removes the processed files from the Landingzone (wildcard *.*) after they have been archived",
       },
