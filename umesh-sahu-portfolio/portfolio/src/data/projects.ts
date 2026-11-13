@@ -39,7 +39,7 @@ export const projects: Project[] = [
   },
 
   {
-    slug: "granduer-properties-ingestion-pipeline",
+    slug: "Granduer-Properties-ingestion-pipeline",
     title: "Granduer Properties: Landing-to-Lakehouse Ingestion Pipeline",
     status: "in-progress",
     featured: true,
@@ -84,37 +84,37 @@ export const projects: Project[] = [
     ],
     screenshots: [
       {
-        src: "/projects/granduer-properties/0.png",
+        src: "/projects/Granduer-Properties/0.png",
         alt: "Lakehouse explorer showing the CS_1 folder with Landingzone and Archivezone subfolders",
         caption: "Lakehouse folder structure: a Landingzone for incoming CSV files and an Archivezone for processed ones",
       },
       {
-        src: "/projects/granduer-properties/1.png",
+        src: "/projects/Granduer-Properties/1.png",
         alt: "Copy data activity source settings using a wildcard path to office_*.csv in the Landingzone",
         caption: "Copy activity source: reads office_*.csv files from CS_1/Landingzone using a wildcard path, searching recursively",
       },
       {
-        src: "/projects/granduer-properties/2.png",
+        src: "/projects/Granduer-Properties/2.png",
         alt: "Copy data activity destination settings loading a silver listing table with the Upsert table action",
         caption: "Copy activity destination: loads the silver listing table in the Granduer_properties schema using Upsert, so new rows are inserted and existing rows updated",
       },
       {
-        src: "/projects/granduer-properties/3.png",
+        src: "/projects/Granduer-Properties/3.png",
         alt: "Archive data activity source settings reading office_*.csv from the Landingzone",
         caption: "Archive activity source: picks up the same office_*.csv files from the Landingzone once the load has succeeded",
       },
       {
-        src: "/projects/granduer-properties/4.png",
+        src: "/projects/Granduer-Properties/4.png",
         alt: "Archive data activity destination settings writing DelimitedText files to the Archivezone folder",
         caption: "Archive activity destination: copies the files to CS_1/Archivezone as DelimitedText",
       },
       {
-        src: "/projects/granduer-properties/5.png",
+        src: "/projects/Granduer-Properties/5.png",
         alt: "Delete data activity source settings targeting all files in the Landingzone folder",
         caption: "Delete activity: removes the processed files from the Landingzone (wildcard *.*) after they have been archived",
       },
       {
-        src: "/projects/granduer-properties/6.png",
+        src: "/projects/Granduer-Properties/6.png",
         alt: "Pipeline run output showing Copy Data To Lakehouse, Archive data and Delete data1 all succeeded",
         caption: "Successful run: Copy Data To Lakehouse (21s), Archive data (14s) and Delete data1 (5s) completed in sequence",
       },
