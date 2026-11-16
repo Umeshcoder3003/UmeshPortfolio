@@ -19,6 +19,7 @@ export type Project = {
   title: string;
   status: "complete" | "in-progress";
   featured?: boolean;
+  platform?: "fabric" | "databricks";   // <-- add this line
   summary: string; // short description shown on the card
   businessProblem: string;
   objective?: string;
