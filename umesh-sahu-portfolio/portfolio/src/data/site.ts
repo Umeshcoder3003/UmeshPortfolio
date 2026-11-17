@@ -7,7 +7,7 @@
  */
 export const site = {
   name: "Umesh Sahu",
-  headline: "Data Engineer | SQL | PySpark | Microsoft Fabric | ETL",
+  headline: "Data Engineer | SQL | PySpark | Microsoft Fabric | Databricks",
   summary:
     "Data Engineering professional focused on building reliable data pipelines, scalable transformations and data-driven solutions using SQL, Python, PySpark and modern data platforms.",
 
@@ -20,9 +20,9 @@ export const site = {
   // ---- SEO --------------------------------------------------------------
   url: "https://your-domain.com", // update after deploying (used for canonical + sitemap)
   location: "India",
-  seoTitle: "Umesh Sahu | Data Engineer | SQL, PySpark, Microsoft Fabric, ETL",
+  seoTitle: "Umesh Sahu | Data Engineer | SQL, PySpark, Microsoft Fabric,  Databricks",
   seoDescription:
-    "Portfolio of Umesh Sahu, a Data Engineer in India working with SQL, Oracle, PL/SQL, ETL, PySpark and Microsoft Fabric. Explore data engineering projects, case studies and pipeline architectures.",
+    "Portfolio of Umesh Sahu, a Data Engineer in India working with SQL, Oracle, PL/SQL, ETL, PySpark , Databricks and Microsoft Fabric. Explore data engineering projects, case studies and pipeline architectures.",
   keywords: [
     "Data Engineer",
     "Data Engineering portfolio",
