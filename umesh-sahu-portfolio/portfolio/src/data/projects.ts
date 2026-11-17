@@ -1841,7 +1841,7 @@ report_df.explain(mode="formatted")`,
     ],
     // github: "your-username/your-repo",
   },
-  
+  ...databricksProjects,
 ];
 
 export const getProject = (slug: string) => projects.find((p) => p.slug === slug);
